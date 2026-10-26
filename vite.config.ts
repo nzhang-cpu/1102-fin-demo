@@ -16,7 +16,9 @@ function figmaAssetResolver() {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ command, isPreview }) => ({
+  // GitHub project Pages is served under /self-service-264-demo-ningdan/; dev stays at /
+  base: command === 'build' || isPreview ? '/self-service-264-demo-ningdan/' : '/',
   plugins: [
     figmaAssetResolver(),
     // The React and Tailwind plugins are both required for Make, even if
@@ -38,4 +40,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))
