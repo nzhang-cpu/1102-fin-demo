@@ -28,8 +28,31 @@ import { useTokens } from "../TokensContext";
 import type { ChatCard, ChatMessage } from "../chatTypes";
 import { useTheme } from "../ThemeContext";
 import content from "../content";
+import { FinComposer } from "./host/FinComposer";
+import { FinCitedText, FinThinking } from "./host/FinCitation";
 
-function HelpChatBotAvatar({ size = 36, bg }: { size?: number; bg: string }) {
+function HelpChatBotAvatar({
+  size = 36,
+  bg,
+  letter = "D",
+  logo,
+}: {
+  size?: number;
+  bg: string;
+  letter?: string;
+  logo?: string;
+}) {
+  if (logo) {
+    return (
+      <div
+        className="shrink-0 rounded-full flex items-center justify-center bg-black"
+        style={{ width: size, height: size }}
+        aria-hidden
+      >
+        <img src={logo} alt="" style={{ width: size * 0.56, height: size * 0.56 }} />
+      </div>
+    );
+  }
   return (
     <div
       className="shrink-0 rounded-full flex items-center justify-center text-white"
@@ -45,7 +68,7 @@ function HelpChatBotAvatar({ size = 36, bg }: { size?: number; bg: string }) {
       }}
       aria-hidden
     >
-      D
+      {letter}
     </div>
   );
 }
@@ -266,6 +289,7 @@ export function ChatScreen({
   const [selectedLearner, setSelectedLearner] = useState<string | null>(initialLearner ?? null);
   const [feedback, setFeedback] = useState<Record<string, "up" | "down" | null>>({});
   const [promptValue, setPromptValue] = useState("");
+  const [finDone, setFinDone] = useState<Record<string, boolean>>({});
   const [chatStartedAt] = useState(() => new Date());
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
@@ -408,6 +432,23 @@ export function ChatScreen({
                 </div>
               )}
 
+              {helpChat && skin.host.agent && (
+                <div className="flex gap-[10px] items-end max-w-[88%] mb-[18px]">
+                  <HelpChatBotAvatar bg={chatAvatarBg} letter={skin.host.agent?.label[0]} logo={skin.host.agent?.logo} />
+                  <div className="flex flex-col items-start min-w-0">
+                    <div
+                      className="rounded-[16px] px-[16px] py-[12px] text-[15px] leading-[22px]"
+                      style={{ background: chatAgentBubble, color: dt.colors.ui.body }}
+                    >
+                      {skin.host.agent.greeting}
+                    </div>
+                    <span className="mt-[6px] text-[11px]" style={{ color: dt.colors.ui.mutedDark }}>
+                      {skin.host.agent.label} · {formatChatClock(chatStartedAt)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {!helpChat && searchContext && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
@@ -493,24 +534,38 @@ export function ChatScreen({
                       )
                     ) : helpChat ? (
                       <div className="flex gap-[10px] items-end max-w-[88%]">
-                        <HelpChatBotAvatar bg={chatAvatarBg} />
+                        <HelpChatBotAvatar bg={chatAvatarBg} letter={skin.host.agent?.label[0]} logo={skin.host.agent?.logo} />
                         <div className="flex flex-col items-start min-w-0">
                           {message.content && (
                             <div
-                              className="rounded-[16px] px-[16px] py-[12px]"
+                              className="rounded-[16px] px-[16px] py-[12px] text-[15px] leading-[22px]"
                               style={{
                                 background: chatAgentBubble,
                                 color: dt.colors.ui.body,
                               }}
                             >
-                              <InlineContent
-                                text={message.content}
-                                articles={articles}
-                                onArticleClick={setSelectedArticle}
-                              />
+                              {skin.host.agent ? (
+                                <FinCitedText
+                                  animate
+                                  onDone={() => setFinDone((d) => (d[message.id] ? d : { ...d, [message.id]: true }))}
+                                  text={message.content}
+                                  citations={(message.citations ?? []).flatMap((title) => {
+                                    const a = articles.find((x) => x.title === title);
+                                    return a
+                                      ? [{ title: a.title, source: "united.com/help", onOpen: () => setSelectedArticle(a) }]
+                                      : [];
+                                  })}
+                                />
+                              ) : (
+                                <InlineContent
+                                  text={message.content}
+                                  articles={articles}
+                                  onArticleClick={setSelectedArticle}
+                                />
+                              )}
                             </div>
                           )}
-                          {message.citations && message.citations.length > 0 && (
+                          {!skin.host.agent && message.citations && message.citations.length > 0 && (
                             <div className="mt-[8px]">
                               <CitationChips
                                 citations={message.citations}
@@ -525,9 +580,13 @@ export function ChatScreen({
                             </div>
                           )}
                           <span
-                            className="mt-[6px] text-[11px]"
-                            style={{ color: dt.colors.ui.mutedDark }}
+                            className="mt-[6px] text-[11px] transition-opacity duration-200"
+                            style={{
+                              color: dt.colors.ui.mutedDark,
+                              opacity: skin.host.agent && message.content && !finDone[message.id] ? 0 : 1,
+                            }}
                           >
+                            {skin.host.agent ? `${skin.host.agent.label} · ` : ""}
                             {formatChatClock(message.timestamp)}
                           </span>
                         </div>
@@ -625,23 +684,27 @@ export function ChatScreen({
                   >
                     {helpChat ? (
                       <>
-                        <HelpChatBotAvatar bg={chatAvatarBg} />
+                        <HelpChatBotAvatar bg={chatAvatarBg} letter={skin.host.agent?.label[0]} logo={skin.host.agent?.logo} />
+                        {skin.host.agent ? (
+                          <FinThinking background={chatAgentBubble} dot={dt.colors.ui.muted} />
+                        ) : (
                         <div
-                          className="rounded-[16px] px-[16px] py-[14px]"
-                          style={{ background: chatAgentBubble }}
-                        >
-                          <div className="flex gap-[5px] items-center">
-                            {[0, 1, 2].map((i) => (
-                              <motion.div
-                                key={i}
-                                className="size-[7px] rounded-full"
-                                style={{ background: chatUserBubble }}
-                                animate={{ opacity: [0.25, 1, 0.25] }}
-                                transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.18 }}
-                              />
-                            ))}
+                            className="rounded-[16px] px-[16px] py-[14px]"
+                            style={{ background: chatAgentBubble }}
+                          >
+                            <div className="flex gap-[5px] items-center">
+                              {[0, 1, 2].map((i) => (
+                                <motion.div
+                                  key={i}
+                                  className="size-[7px] rounded-full"
+                                  style={{ background: chatUserBubble }}
+                                  animate={{ opacity: [0.25, 1, 0.25] }}
+                                  transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.18 }}
+                                />
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </>
                     ) : (
                       <>
@@ -672,35 +735,46 @@ export function ChatScreen({
             {helpChat ? (
               <>
                 <div className="relative w-full" ref={inputBarRef}>
-                  <div className="flex items-center gap-[8px] h-[48px] pl-[18px] pr-[8px] rounded-full border border-[#DCDFE6] bg-white">
-                    <input
-                      type="text"
+                  {skin.host.agent ? (
+                    <FinComposer
                       value={promptValue}
-                      onChange={(e) => handlePromptChange(e.target.value)}
-                      onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+                      onChange={handlePromptChange}
                       onFocus={() => promptValue.trim() && setDropdownOpen(true)}
-                      placeholder="Type your message..."
-                      className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[15px] text-[#1A1A1A] placeholder:text-[#909399]"
+                      onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
                     />
-                    <button
-                      type="button"
-                      className="size-[34px] rounded-full bg-[#D1D5DB] text-white flex items-center justify-center shrink-0 hover:bg-[#9CA3AF] transition-colors"
-                      aria-label="Send"
-                    >
-                      <ChevronRight className="size-[18px]" strokeWidth={2.5} />
-                    </button>
-                  </div>
+                  ) : (
+                  <div className="flex items-center gap-[8px] h-[48px] pl-[18px] pr-[8px] rounded-full border border-[#DCDFE6] bg-white">
+                      <input
+                        type="text"
+                        value={promptValue}
+                        onChange={(e) => handlePromptChange(e.target.value)}
+                        onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+                        onFocus={() => promptValue.trim() && setDropdownOpen(true)}
+                        placeholder="Type your message..."
+                        className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[15px] text-[#1A1A1A] placeholder:text-[#909399]"
+                      />
+                      <button
+                        type="button"
+                        className="size-[34px] rounded-full bg-[#D1D5DB] text-white flex items-center justify-center shrink-0 hover:bg-[#9CA3AF] transition-colors"
+                        aria-label="Send"
+                      >
+                        <ChevronRight className="size-[18px]" strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 {showSuggestions && followUpNudges.length > 0 && (
                   <div className="mt-[10px]">
                     <AiNudgeChips subtle nudges={followUpNudges} onNudge={handleFollowUpNudge} />
                   </div>
                 )}
-                <p className="mt-[12px] text-center text-[11px] leading-[15px] text-[#606266]">
-                  Responses generated with the assistance of AI technology.
-                  <br />
-                  Avoid sharing personal information unless requested.
-                </p>
+                {!skin.host.agent && (
+                  <p className="mt-[12px] text-center text-[11px] leading-[15px] text-[#606266]">
+                    Responses generated with the assistance of AI technology.
+                    <br />
+                    Avoid sharing personal information unless requested.
+                  </p>
+                )}
               </>
             ) : (
               <>

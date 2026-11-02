@@ -5,11 +5,14 @@ import { defaultTokens } from "../tokens";
 import fixedJson from "../content/fixed.json";
 import disneyPlusGenerated from "../content/generated script/generated_disney_plus.json";
 import southwestGenerated from "../content/generated script/generated_southwest.json";
+import finLogo from "../assets/logos/fin-white.png";
+import unitedLogo from "../assets/logos/united.svg";
+import unitedGenerated from "../content/generated script/generated_united.json";
 
-export type CompanySkinId = "default" | "disney-plus" | "southwest";
+export type CompanySkinId = "default" | "disney-plus" | "southwest" | "united";
 
 export type HostShellKind = "none" | "help-center";
-export type HomeLayout = "centered-hero" | "help-mirror" | "help-pathway";
+export type HomeLayout = "centered-hero" | "help-mirror" | "help-pathway" | "united-help";
 export type ArticleLayout = "panel" | "help-article";
 export type ChatLayout = "default" | "help-chat";
 
@@ -26,6 +29,12 @@ export interface CompanySkinHost {
   showChatFab: boolean;
   /** Optional promo/alert strips under the host nav. */
   banners?: HostBannerCopy[];
+  /** Optional primary nav links (mega-nav style). Replaces the brand + search header. */
+  navItems?: string[];
+  /** Optional logo image shown in the mega-nav. */
+  navLogo?: string;
+  /** Optional named assistant: greeting bubble opens the chat; label prefixes agent timestamps. */
+  agent?: { label: string; greeting: string; logo?: string; suggestions?: string[] };
 }
 
 export interface CompanySkinLayout {
@@ -224,6 +233,61 @@ export function buildSouthwestDesignTokens(): DesignTokens {
   return dt;
 }
 
+/** United Airlines Help Center — United blue host paint (brand values, not scraped from united.com). */
+export function buildUnitedDesignTokens(): DesignTokens {
+  const dt = deepClone(defaultDt) as DesignTokens;
+  const unitedBlue = "#1414D2";
+  const linkBlue = "#1414D2";
+  const deepBlue = "#000000";
+  dt.colors.brand.navy = deepBlue;
+  dt.colors.brand.navyDeep = linkBlue;
+  dt.colors.brand.purple = unitedBlue;
+  dt.colors.brand.purpleDark = deepBlue;
+  dt.colors.brand.purpleMid = "#2A2A2A";
+  dt.colors.ui.body = "#000000";
+  dt.colors.ui.muted = "#6B7280";
+  dt.colors.ui.mutedDark = "#4B5563";
+  dt.colors.ui.iconStroke = "#000000";
+  dt.colors.ui.borderLight = "#C9CED6";
+  dt.colors.ui.borderFaint = "#E5E7EB";
+  dt.colors.ui.bgPage = "#FFFFFF";
+  dt.colors.ui.bgInput = "#FFFFFF";
+  dt.colors.accent.indigo = unitedBlue;
+  dt.colors.accent.sky = "#6B6BE6";
+  dt.colors.host.navBg = "#000000";
+  dt.colors.host.navText = "#FFFFFF";
+  dt.colors.host.bannerBg = "#F2F2F2";
+  dt.colors.host.bannerBorder = "#D0D0D0";
+  dt.colors.host.bannerIcon = unitedBlue;
+  dt.colors.host.link = linkBlue;
+  dt.colors.host.pageBg = "#FFFFFF";
+  dt.colors.host.chatUserBubble = unitedBlue;
+  dt.colors.host.chatAgentBubble = "#F2F2F2";
+  dt.colors.host.chatAvatarBg = deepBlue;
+  dt.colors.host.aiSummaryAccent = unitedBlue;
+  dt.colors.host.aiSummaryBg = "#F2F2F2";
+  dt.colors.host.searchCta = unitedBlue;
+  dt.colors.host.searchCtaAlt = "#EDEDED";
+  dt.colors.host.tileAccent = unitedBlue;
+  dt.gradients.pageBackground = "#FFFFFF";
+  dt.gradients.theme.skyPeriwinkle = unitedBlue;
+  dt.gradients.button.primary = `linear-gradient(180deg, ${unitedBlue} 0%, ${deepBlue} 100%)`;
+  dt.gradients.button.send = `linear-gradient(180deg, ${unitedBlue} 0%, ${deepBlue} 100%)`;
+  dt.gradients.button.indigo = `linear-gradient(180deg, ${unitedBlue} 0%, ${deepBlue} 100%)`;
+  dt.shadows.searchGlow = "0 2px 12px rgba(20, 20, 210, 0.14)";
+  dt.fonts.families.body = "'United Sans', 'Haas Grot Text', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+  dt.fonts.families.heading = "'United Sans', 'Haas Grot Text', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+  dt.themes.skyPeriwinkle = {
+    id: "united",
+    label: "United",
+    gradient: `linear-gradient(135deg, ${unitedBlue} 0%, #6B6BE6 60%, #B8B8F2 100%)`,
+    swatchA: unitedBlue,
+    swatchB: "#B8B8F2",
+    textColor: deepBlue,
+  };
+  return dt;
+}
+
 export const COMPANY_SKINS: CompanySkin[] = [
   {
     id: "default",
@@ -291,6 +355,39 @@ export const COMPANY_SKINS: CompanySkin[] = [
     },
     layout: {
       home: "help-pathway",
+      article: "help-article",
+      chat: "help-chat",
+    },
+  },
+  {
+    id: "united",
+    label: "United",
+    hint: "Help Center host + shared essence",
+    designTokens: buildUnitedDesignTokens(),
+    tokens: buildTokens(
+      unitedGenerated as unknown as Record<string, unknown>,
+      "United",
+    ),
+    host: {
+      addressBarHost: "united.com/en/us/fly/help-center.html",
+      showProductChrome: false,
+      shell: "help-center",
+      showChatFab: true,
+      navLogo: unitedLogo,
+      agent: {
+        label: "Fin from UA",
+        logo: finLogo,
+        suggestions: [
+          "How do I check in for my flight?",
+          "What's my baggage allowance?",
+          "Change or cancel my flight",
+        ],
+        greeting: "Hi, I'm Fin! I'm United's virtual assistant. How can I help you today?",
+      },
+      navItems: ["Booking", "Manage my trips", "Travel info", "MileagePlus", "United cards", "Deals", "Help"],
+    },
+    layout: {
+      home: "united-help",
       article: "help-article",
       chat: "help-chat",
     },

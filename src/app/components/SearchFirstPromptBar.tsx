@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Mic, Send } from "lucide-react";
 import { useTokens } from "../TokensContext";
 import { useTheme } from "../ThemeContext";
+import { useSkin } from "../SkinContext";
 import { useDesignTokens } from "../DesignTokensContext";
 import {
   buildSuggestionGroups,
@@ -76,7 +77,10 @@ export function SearchFirstPromptBar({
   const hasSuggestions = suggestionGroupsHaveItems(suggestionGroups);
   const canSubmit = searchQuery.trim().length > 0;
 
-  const GLOW = dt.shadows.searchGlow;
+  const { skin } = useSkin();
+  /** United help home sits the bar directly on a solid blue card, so the pill frame is clear. */
+  const clearFrame = skin.layout.home === "united-help";
+  const GLOW = clearFrame ? "none" : dt.shadows.searchGlow;
 
   const inputWrapperStyle: React.CSSProperties = isOpen
     ? { borderRadius: "16px" }
@@ -93,7 +97,7 @@ export function SearchFirstPromptBar({
           style={{
             borderRadius: isOpen ? 20 : 100,
             padding: isOpen ? "4px 4px 14px 4px" : "4px 10px 4px 4px",
-            backgroundImage: isOpen ? "none" : theme.gradient,
+            backgroundImage: isOpen || clearFrame ? "none" : theme.gradient,
             backgroundColor: isOpen ? "#ffffff" : "transparent",
             boxShadow: GLOW,
             overflow: "hidden",

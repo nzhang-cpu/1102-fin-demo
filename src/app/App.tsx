@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { AnimatePresence } from "motion/react";
 import { Header } from "@/app/components/Header";
@@ -60,20 +60,23 @@ function AppInner() {
   const [instantAgent, setInstantAgent] = useState(false);
   const [articleLayout, setArticleLayout] = useState<ArticleLayoutVariant>("inline");
   const [controlsOpen, setControlsOpen] = useState(false);
-  const controlsCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showControls = () => {
-    if (controlsCloseTimer.current) {
-      clearTimeout(controlsCloseTimer.current);
-      controlsCloseTimer.current = null;
-    }
-    setControlsOpen(true);
-  };
-
-  const hideControls = () => {
-    if (controlsCloseTimer.current) clearTimeout(controlsCloseTimer.current);
-    controlsCloseTimer.current = setTimeout(() => setControlsOpen(false), 140);
-  };
+  // Demo controls are hidden until the user presses K (Esc also closes them).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "k" || e.key === "K") {
+        e.preventDefault();
+        setControlsOpen((v) => !v);
+      } else if (e.key === "Escape") {
+        setControlsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const helpCenterHost = skin.host.shell === "help-center";
   const articles = tokens.articles.learning as ArticleDetails[];
@@ -175,6 +178,18 @@ function AppInner() {
     setSearchQuery("Hi — I’d like to chat with an agent.");
     setChatAnimateBar(false);
     setInstantAgent(true);
+    setHomepageView("chat");
+  };
+
+  /** Expands the floating Fin window into the full-page chat, carrying the latest question over. */
+  const handleExpandChat = (query?: string) => {
+    setSearchBridge(null);
+    setArticleBridge(null);
+    setChatInitialLearner(null);
+    setSearchQuery(query || "Hi — I’d like to chat with an agent.");
+    setChatAnimateBar(false);
+    setInstantAgent(true);
+    setEntrance("homepage");
     setHomepageView("chat");
   };
 
@@ -324,12 +339,14 @@ function AppInner() {
           showTopicTree={
             maturity === "current" &&
             skin.layout.home !== "help-mirror" &&
-            skin.layout.home !== "help-pathway"
+            skin.layout.home !== "help-pathway" &&
+            skin.layout.home !== "united-help"
           }
           showBotFab={
             maturity === "current" &&
             skin.layout.home !== "help-mirror" &&
-            skin.layout.home !== "help-pathway"
+            skin.layout.home !== "help-pathway" &&
+            skin.layout.home !== "united-help"
           }
           onOpenArticle={handleTreeArticle}
           personalizedHeader={features.customHeader}
@@ -470,10 +487,8 @@ function AppInner() {
   return (
     <div className="box-border h-dvh w-full max-w-full overflow-hidden flex items-stretch justify-start pl-[clamp(12px,2vw,20px)] pr-0 py-[clamp(12px,2vh,20px)] bg-[#c8c8d0]">
       <div
-        className="fixed left-0 top-0 bottom-0 z-[80]"
-        style={{ width: controlsOpen ? 248 : 12 }}
-        onMouseEnter={showControls}
-        onMouseLeave={hideControls}
+        className={`fixed left-0 top-0 bottom-0 z-[80] ${controlsOpen ? "" : "pointer-events-none"}`}
+        style={{ width: controlsOpen ? 248 : 0 }}
       >
         <aside
           className={`absolute left-0 top-0 bottom-0 w-[248px] flex flex-col gap-[10px] pt-[clamp(16px,2vh,24px)] pb-[clamp(12px,2vh,20px)] pl-[clamp(12px,2vw,20px)] pr-[12px] min-h-0 overflow-hidden bg-[#c8c8d0] shadow-[10px_0_28px_rgba(0,0,0,0.16)] transition-transform duration-200 ease-out ${
@@ -550,6 +565,7 @@ function AppInner() {
                 <HostShell
                   onHome={goEntranceHome}
                   onSearch={handleSearch}
+                  onExpandChat={handleExpandChat}
                   searchValue={hostShellOpts.searchValue}
                   showNavSearch={hostShellOpts.showNavSearch}
                   showBanner={hostShellOpts.showBanner}

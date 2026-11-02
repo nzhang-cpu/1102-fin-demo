@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { ChevronDown, Globe, MessageCircle, Search, X } from "lucide-react";
+import { FinMessenger } from "./FinMessenger";
+import { Bell, ChevronDown, ChevronRight, Globe, MessageCircle, Search, User, X } from "lucide-react";
 import { useDesignTokens } from "../../DesignTokensContext";
 import { useTokens } from "../../TokensContext";
 import { useSkin } from "../../SkinContext";
@@ -8,6 +9,8 @@ interface HostShellProps {
   children: ReactNode;
   searchValue?: string;
   onSearch?: (query: string) => void;
+  /** Called when the floating chat window is expanded to the full page. */
+  onExpandChat?: (query?: string) => void;
   onHome?: () => void;
   showBanner?: boolean;
   showNavSearch?: boolean;
@@ -22,6 +25,7 @@ export function HostShell({
   children,
   searchValue = "",
   onSearch,
+  onExpandChat,
   onHome,
   showBanner = true,
   showNavSearch = true,
@@ -35,6 +39,15 @@ export function HostShell({
   const banners = skin.host.banners ?? [];
   const [draft, setDraft] = useState(searchValue);
   const [bannerOpen, setBannerOpen] = useState(true);
+  const [messengerOpen, setMessengerOpen] = useState(false);
+  const hasMessenger = !!skin.host.agent;
+
+  useEffect(() => {
+    if (!hasMessenger) return;
+    const open = () => setMessengerOpen(true);
+    window.addEventListener("open-fin-messenger", open);
+    return () => window.removeEventListener("open-fin-messenger", open);
+  }, [hasMessenger]);
 
   useEffect(() => {
     setDraft(searchValue);
@@ -44,6 +57,8 @@ export function HostShell({
     const q = draft.trim();
     if (q) onSearch?.(q);
   };
+
+  const navItems = skin.host.navItems;
 
   const navText = (host.navText || "").toLowerCase();
   const lightNav = navText !== "#ffffff" && navText !== "#fff" && navText !== "white";
@@ -65,6 +80,48 @@ export function HostShell({
           borderBottom: lightNav ? `1px solid ${dt.colors.ui.borderFaint}` : undefined,
         }}
       >
+        {navItems ? (
+          <div className="flex items-center gap-[22px] px-[20px] h-[56px] max-w-[1120px] mx-auto w-full">
+            <button
+              type="button"
+              onClick={onHome}
+              className="shrink-0 size-[44px] flex items-center justify-center"
+              aria-label={`Go to ${brand} Help Center`}
+            >
+              {skin.host.navLogo ? (
+                <img src={skin.host.navLogo} alt={brand} className="size-full" />
+              ) : (
+                <Globe className="size-[26px] text-white" strokeWidth={1.5} />
+              )}
+            </button>
+            <nav className="flex flex-1 items-center gap-[18px] min-w-0 overflow-hidden">
+              {navItems.map((item, i) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={i === navItems.length - 1 ? onHome : undefined}
+                  className="inline-flex shrink-0 items-center gap-[3px] text-[13px] font-semibold whitespace-nowrap hover:opacity-80"
+                >
+                  {item}
+                  {i === navItems.length - 1 ? (
+                    <ChevronRight className="size-[12px]" />
+                  ) : (
+                    <ChevronDown className="size-[12px]" />
+                  )}
+                </button>
+              ))}
+            </nav>
+            <div className="flex items-center gap-[12px] shrink-0">
+              <span className="inline-flex items-center gap-[4px] text-[11px] font-semibold">
+                <Globe className="size-[14px]" />
+                English - US $
+              </span>
+              <Search className="size-[16px]" />
+              <Bell className="size-[16px]" fill="currentColor" />
+              <User className="size-[16px]" fill="currentColor" />
+            </div>
+          </div>
+        ) : (
         <div className="flex items-center gap-[16px] px-[20px] py-[14px] max-w-[1120px] mx-auto w-full">
           <button
             type="button"
@@ -136,6 +193,7 @@ export function HostShell({
             </button>
           </div>
         </div>
+        )}
 
         {showBanner && bannerOpen && banners.length > 0 && (
           <div className="px-[20px] pb-[12px] max-w-[1120px] mx-auto w-full flex flex-col gap-[8px]">
@@ -178,15 +236,31 @@ export function HostShell({
 
       <div className="flex-1 min-h-0 overflow-hidden relative">{children}</div>
 
+      {showChatFab && hasMessenger && messengerOpen && (
+        <FinMessenger
+          onClose={() => setMessengerOpen(false)}
+          onExpand={(q) => {
+            setMessengerOpen(false);
+            onExpandChat?.(q);
+          }}
+        />
+      )}
+
       {showChatFab && (
         <button
           type="button"
-          onClick={() => onSearch?.(`Chat with ${brand} support`)}
+          onClick={() =>
+            hasMessenger ? setMessengerOpen((v) => !v) : onSearch?.(`Chat with ${brand} support`)
+          }
           className="absolute bottom-[20px] right-[20px] size-[52px] rounded-full text-white shadow-[0_8px_24px_rgba(0,0,0,0.2)] flex items-center justify-center z-20"
           style={{ background: host.link }}
           aria-label="Open chat"
         >
-          <MessageCircle className="size-[22px]" />
+          {hasMessenger && messengerOpen ? (
+            <ChevronDown className="size-[22px]" />
+          ) : (
+            <MessageCircle className="size-[22px]" />
+          )}
         </button>
       )}
     </div>

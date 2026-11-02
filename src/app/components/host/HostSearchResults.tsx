@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useSkin } from "../../SkinContext";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronLeft,
@@ -58,6 +59,7 @@ export function HostSearchResults({
 }: HostSearchResultsProps) {
   const { tokens } = useTokens();
   const { dt } = useDesignTokens();
+  const { skin } = useSkin();
   const catalog = (tokens.articles?.learning ?? []) as HostArticleDetails[];
   const categories = (tokens.categories ?? []) as { label: string; menuItems?: string[] }[];
   const query = initialQuery.trim();
@@ -66,7 +68,19 @@ export function HostSearchResults({
   const brand = dt.colors.brand;
   const ui = dt.colors.ui;
   const font = dt.fonts.families.body;
-  const assistantLabel = `${tokens.brandName} Virtual Assistant`;
+  const assistantLabel = skin.host.agent?.label ?? `${tokens.brandName} Virtual Assistant`;
+
+  const compactSummary = !!skin.host.agent;
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [summaryOverflows, setSummaryOverflows] = useState(false);
+  const summaryRef = useRef<HTMLParagraphElement>(null);
+
+  useLayoutEffect(() => {
+    const el = summaryRef.current;
+    if (compactSummary && el && !summaryExpanded) {
+      setSummaryOverflows(el.scrollHeight > el.clientHeight + 1);
+    }
+  });
 
   const [draft, setDraft] = useState(query);
   const [askDraft, setAskDraft] = useState("");
@@ -246,7 +260,13 @@ export function HostSearchResults({
                   AI Summary
                 </span>
               </div>
-              <p className="text-[15px] leading-[22px] mb-[10px]" style={{ color: ui.body }}>
+              <p
+                ref={summaryRef}
+                className={`text-[15px] leading-[22px] ${compactSummary ? "mb-[4px]" : "mb-[10px]"} ${
+                  compactSummary && !summaryExpanded ? "line-clamp-3" : ""
+                }`}
+                style={{ color: ui.body }}
+              >
                 {summaryPlain} {smartSummary.detail.split("\n\n")[0].replace(/\{\{\d+\}\}/g, "")}{" "}
                 {onStartConversation && (
                   <>
@@ -263,11 +283,21 @@ export function HostSearchResults({
                   </>
                 )}
               </p>
+              {compactSummary && (summaryOverflows || summaryExpanded) && (
+                <button
+                  type="button"
+                  onClick={() => setSummaryExpanded((v) => !v)}
+                  className="mb-[10px] text-[14px] font-semibold hover:underline"
+                  style={{ color: host.link }}
+                >
+                  {summaryExpanded ? "View less" : "View more"}
+                </button>
+              )}
               <div className="flex items-start justify-between gap-[12px] flex-wrap">
                 <p className="text-[12px] leading-[16px] flex-1 min-w-[180px]" style={{ color: ui.muted }}>
-                  Responses generated with the assistance of AI technology, avoid sharing personal
-                  information. For the most accurate and complete information, please check source
-                  links.
+                  {compactSummary
+                    ? "AI-generated. Avoid sharing personal information."
+                    : "Responses generated with the assistance of AI technology, avoid sharing personal information. For the most accurate and complete information, please check source links."}
                 </p>
                 {showSummaryFeedback && <AiSummaryFeedback />}
               </div>
@@ -288,11 +318,13 @@ export function HostSearchResults({
                   }}
                 >
                   <div className="flex items-center gap-[8px] rounded-full bg-white pl-[16px] pr-[6px] py-[6px]">
-                    <Sparkles
-                      className="size-[15px] shrink-0 transition-colors"
-                      style={{ color: askFocused ? host.aiSummaryAccent : ui.muted }}
-                      strokeWidth={2}
-                    />
+                    {!compactSummary && (
+                      <Sparkles
+                        className="size-[15px] shrink-0 transition-colors"
+                        style={{ color: askFocused ? host.aiSummaryAccent : ui.muted }}
+                        strokeWidth={2}
+                      />
+                    )}
                     <input
                       type="text"
                       value={askDraft}
@@ -305,7 +337,7 @@ export function HostSearchResults({
                           submitAsk();
                         }
                       }}
-                      placeholder="Ask a follow-up question…"
+                      placeholder={compactSummary ? "Chat with Fin" : "Ask a follow-up question…"}
                       className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[14px] placeholder:opacity-50"
                       style={{ color: brand.navy }}
                       aria-label="Ask a follow-up question"
@@ -332,7 +364,7 @@ export function HostSearchResults({
                 </div>
 
                 <div className="mt-[10px] flex flex-wrap gap-[8px]">
-                  {followUps.map((label) => (
+                  {(compactSummary ? [] : followUps).map((label) => (
                     <button
                       key={label}
                       type="button"
@@ -482,7 +514,7 @@ export function HostSearchResults({
                   <p className="text-[14px] leading-[20px]" style={{ color: ui.mutedDark }}>
                     {resultSnippet(article)}
                   </p>
-                  {showAiAssist && article.summary && (
+                  {showAiAssist && !compactSummary && article.summary && (
                     <span
                       className="mt-[10px] inline-flex items-center gap-[4px] text-[12px] font-medium"
                       style={{ color: host.aiSummaryAccent }}
