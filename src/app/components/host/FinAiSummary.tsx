@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { Send, Sparkles } from "lucide-react";
+import { Send } from "lucide-react";
 import { useDesignTokens } from "../../DesignTokensContext";
 import { AiSummaryFeedback } from "../AiAssistCard";
 
@@ -45,12 +45,6 @@ export function FinAiSummary({ children, onAsk, showFeedback = false }: FinAiSum
     >
       <div className="px-[18px] pt-[16px] pb-[14px]">
         <div className="flex items-center gap-[8px] mb-[10px]">
-          <span
-            className="size-[26px] rounded-full flex items-center justify-center"
-            style={{ background: `${host.aiSummaryAccent}1F` }}
-          >
-            <Sparkles className="size-[14px]" style={{ color: host.aiSummaryAccent }} strokeWidth={2.2} />
-          </span>
           <span className="text-[15px] font-bold" style={{ color: brand.navy }}>
             AI Summary
           </span>
