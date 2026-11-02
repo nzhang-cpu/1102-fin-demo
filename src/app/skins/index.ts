@@ -275,8 +275,8 @@ export function buildUnitedDesignTokens(): DesignTokens {
   dt.gradients.button.send = `linear-gradient(180deg, ${unitedBlue} 0%, ${deepBlue} 100%)`;
   dt.gradients.button.indigo = `linear-gradient(180deg, ${unitedBlue} 0%, ${deepBlue} 100%)`;
   dt.shadows.searchGlow = "0 2px 12px rgba(20, 20, 210, 0.14)";
-  dt.fonts.families.body = "'United Sans', 'Haas Grot Text', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif";
-  dt.fonts.families.heading = "'United Sans', 'Haas Grot Text', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+  dt.fonts.families.body = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+  dt.fonts.families.heading = "'Helvetica Neue', Helvetica, Arial, sans-serif";
   dt.themes.skyPeriwinkle = {
     id: "united",
     label: "United",

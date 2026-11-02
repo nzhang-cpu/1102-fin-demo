@@ -60,7 +60,7 @@ export function FinMessenger({
   ]);
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
-  const [doneIds, setDoneIds] = useState<Set<number>>(() => new Set([0]));
+  const [doneIds, setDoneIds] = useState<Set<number>>(() => new Set());
   const [menuOpen, setMenuOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   const [filter, setFilter] = useState("");
@@ -219,7 +219,7 @@ export function FinMessenger({
                   style={{ background: host.chatAgentBubble }}
                 >
                   <FinCitedText
-                    animate={m.id !== 0}
+                    animate
                     onDone={() => setDoneIds((d) => (d.has(m.id) ? d : new Set(d).add(m.id)))}
                     text={m.text}
                     citations={m.source ? [{ title: m.source, source: "united.com/help" }] : []}
@@ -247,7 +247,7 @@ export function FinMessenger({
             </div>
           ),
         )}
-        {messages.length === 1 && !typing && agent?.suggestions && (
+        {messages.length === 1 && !typing && doneIds.has(0) && agent?.suggestions && (
           <div className="mt-auto flex flex-col items-end gap-[8px]">
             {agent.suggestions.map((s) => (
               <button

@@ -100,6 +100,19 @@ export function HostSearchResults({
   const smartSummary = useMemo(() => buildSmartSummary(query || "help", catalog), [query, catalog]);
   const summaryPlain = `${smartSummary.leadBefore}${smartSummary.highlight}${smartSummary.leadAfter}`;
 
+  const summarySources = useMemo(
+    () =>
+      smartSummary.citations.map((cit) => {
+        const article = catalog.find((a) => a.title === cit.title);
+        return {
+          title: cit.title,
+          source: "united.com/help",
+          onOpen: article ? () => onOpenArticle(article) : undefined,
+        };
+      }),
+    [smartSummary.citations, catalog, onOpenArticle],
+  );
+
   const results = useMemo(() => {
     const q = query.toLowerCase();
     let items = catalog.filter((a) => {
@@ -227,11 +240,12 @@ export function HostSearchResults({
 
         {showSmartSummary && compactSummary && (
           <FinAiSummary
+            lead={summaryPlain}
+            body={smartSummary.detail.replace(/\n\n/g, " ")}
+            sources={summarySources}
             onAsk={onStartConversation ? (q) => submitAsk(q) : undefined}
             showFeedback={showSummaryFeedback}
-          >
-            {summaryPlain} {smartSummary.detail.split("\n\n")[0].replace(/\{\{\d+\}\}/g, "")}
-          </FinAiSummary>
+          />
         )}
 
         {showSmartSummary && !compactSummary && (

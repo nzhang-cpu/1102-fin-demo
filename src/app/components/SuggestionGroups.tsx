@@ -130,7 +130,7 @@ export function SuggestionGroupList({
       {groups.map((group, gi) => (
         <div key={group.id} className={gi > 0 ? "mt-[6px]" : ""}>
           <p
-            className={`font-['Plus_Jakarta_Sans',sans-serif] text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9CA3AF] ${
+            className={`[font-family:inherit] text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9CA3AF] ${
               compact ? "px-[16px] pt-[8px] pb-[4px]" : "px-[24px] pt-[10px] pb-[4px]"
             }`}
           >
@@ -145,21 +145,21 @@ export function SuggestionGroupList({
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => onSelect(item)}
-                    className={`w-full text-left flex items-start gap-[12px] hover:bg-gray-50 transition-colors ${
+                    className={`w-full text-left flex items-center gap-[12px] hover:bg-gray-50 transition-colors ${
                       compact
                         ? "px-[16px] py-[10px]"
                         : "px-[24px] py-[11px] rounded-[12px]"
                     }`}
                   >
-                    <span className="mt-[2px] size-[28px] rounded-[8px] bg-[#F3F4F6] flex items-center justify-center shrink-0">
+                    <span className="size-[28px] rounded-[8px] bg-[#F3F4F6] flex items-center justify-center shrink-0">
                       <Icon className="size-[14px] text-[#6B7280]" strokeWidth={2} />
                     </span>
                     <span className="min-w-0 flex flex-col gap-[2px]">
-                      <span className="font-['Plus_Jakarta_Sans',sans-serif] text-[14px] text-[#374151] leading-snug">
+                      <span className="[font-family:inherit] text-[14px] text-[#374151] leading-snug">
                         {highlightMatch(item.label, query)}
                       </span>
                       {item.sub ? (
-                        <span className="font-['Plus_Jakarta_Sans',sans-serif] text-[12px] text-[#9CA3AF] truncate">
+                        <span className="[font-family:inherit] text-[12px] text-[#9CA3AF] truncate">
                           {item.sub}
                         </span>
                       ) : null}

@@ -38,7 +38,7 @@ function FileChip({ file, onRemove }: { file: UploadedFile; onRemove: () => void
         <FileText className="size-[12px] text-white" />
       </div>
       <span
-        className="font-['Plus_Jakarta_Sans',sans-serif] text-[12px] truncate min-w-0"
+        className="[font-family:inherit] text-[12px] truncate min-w-0"
         style={{ color: "var(--color-body, #364153)" }}
       >
         {file.name}
@@ -262,7 +262,7 @@ export function SearchBar({
                       lineHeight: "24px",
                       color: "var(--color-body, #364153)",
                     }}
-                    className="flex-1 bg-transparent border-0 outline-none font-['Plus_Jakarta_Sans',sans-serif] text-[16px] placeholder:text-[#99a1af] tracking-[-0.3125px]"
+                    className="flex-1 bg-transparent border-0 outline-none [font-family:inherit] text-[16px] placeholder:text-[#99a1af] tracking-[-0.3125px]"
                   />
 
                   <button
@@ -330,7 +330,7 @@ export function SearchBar({
                 onClick={handleUploadClick}
               >
                 <Upload className="size-[15px] text-[#6B7280] shrink-0" />
-                <span className="font-['Plus_Jakarta_Sans',sans-serif] text-[13px] text-[#364153]">
+                <span className="[font-family:inherit] text-[13px] text-[#364153]">
                   {t.uploadLabel}
                 </span>
               </button>
@@ -340,7 +340,7 @@ export function SearchBar({
                 onClick={() => setPlusOpen(false)}
               >
                 <Database className="size-[15px] text-[#6B7280] shrink-0" />
-                <span className="font-['Plus_Jakarta_Sans',sans-serif] text-[13px] text-[#364153]">
+                <span className="[font-family:inherit] text-[13px] text-[#364153]">
                   {t.connectLabel}
                 </span>
               </button>

@@ -141,11 +141,11 @@ function HelpArticleLayout({
 
             {finStyle && showAiAssist && article.summary && (
               <FinAiSummary
+                lead={article.summary}
+                sources={[{ title: article.title, source: "united.com/help" }]}
                 showFeedback={showSummaryFeedback}
                 onAsk={(q) => window.dispatchEvent(new CustomEvent("open-fin-chat", { detail: { query: q } }))}
-              >
-                {article.summary}
-              </FinAiSummary>
+              />
             )}
 
             {!finStyle && showAiAssist && article.summary && (

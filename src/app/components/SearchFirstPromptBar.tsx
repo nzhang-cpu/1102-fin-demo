@@ -50,24 +50,40 @@ export function SearchFirstPromptBar({
     if (el.scrollHeight > 28) setIsOpen(true);
   };
 
+  /** Set once a search is submitted so the bar holds its shape while the screen fades out. */
+  const leavingRef = useRef(false);
+
   const handleSearch = useCallback(() => {
-    if (searchQuery.trim() && onSearch) onSearch(searchQuery);
+    if (searchQuery.trim() && onSearch) {
+      leavingRef.current = true;
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+      onSearch(searchQuery);
+    }
   }, [searchQuery, onSearch]);
 
   const handleFocus = () => {
+    leavingRef.current = false;
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     setIsOpen(true);
   };
 
   const handleBlur = () => {
-    blurTimeoutRef.current = setTimeout(() => setIsOpen(false), 150);
+    if (leavingRef.current) return;
+    blurTimeoutRef.current = setTimeout(() => {
+      if (!leavingRef.current) setIsOpen(false);
+    }, 150);
   };
 
   const handleSuggestionClick = (text: string) => {
     setSearchQuery(text);
-    setIsOpen(false);
     if (inputRef.current) inputRef.current.style.height = "auto";
-    if (onSearch) onSearch(text);
+    if (onSearch) {
+      leavingRef.current = true;
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+      onSearch(text);
+    } else {
+      setIsOpen(false);
+    }
   };
 
   const suggestionGroups = useMemo(
@@ -82,9 +98,13 @@ export function SearchFirstPromptBar({
   const clearFrame = skin.layout.home === "united-help";
   const GLOW = clearFrame ? "none" : dt.shadows.searchGlow;
 
+  // Closed radii are half the bar's height (72px outer, 64px inner), not 100px, so the
+  // morph to the open shape animates evenly instead of lagging and then snapping.
   const inputWrapperStyle: React.CSSProperties = isOpen
     ? { borderRadius: "16px" }
-    : { borderRadius: "100px" };
+    : { borderRadius: "32px" };
+  const EASE = "cubic-bezier(0.4,0,0.2,1)";
+  const DUR = "240ms";
 
   return (
     <div className="w-full max-w-[896px] mx-auto px-[40px]">
@@ -95,22 +115,35 @@ export function SearchFirstPromptBar({
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           style={{
-            borderRadius: isOpen ? 20 : 100,
-            padding: isOpen ? "4px 4px 14px 4px" : "4px 10px 4px 4px",
-            backgroundImage: isOpen || clearFrame ? "none" : theme.gradient,
+            position: "relative",
+            borderRadius: isOpen ? 20 : 36,
+            padding: isOpen ? "4px 10px 14px 4px" : "4px 10px 4px 4px",
             backgroundColor: isOpen ? "#ffffff" : "transparent",
             boxShadow: GLOW,
             overflow: "hidden",
-            transition:
-              "border-radius 200ms cubic-bezier(0.4,0,0.2,1), padding 200ms cubic-bezier(0.4,0,0.2,1), background-color 200ms cubic-bezier(0.4,0,0.2,1)",
+            transition: `border-radius ${DUR} ${EASE}, padding ${DUR} ${EASE}, background-color ${DUR} ${EASE}`,
           }}
         >
+          {/* Gradient frame fades out instead of switching off, so opening never flashes. */}
+          {!clearFrame && (
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage: theme.gradient,
+                opacity: isOpen ? 0 : 1,
+                transition: `opacity ${DUR} ${EASE}`,
+                pointerEvents: "none",
+              }}
+            />
+          )}
           <div
             style={{
+              position: "relative",
               display: "flex",
               alignItems: "center",
-              gap: isOpen ? "0" : "6px",
-              transition: "gap 180ms cubic-bezier(0.4,0,0.2,1)",
+              gap: "6px",
             }}
           >
             <div
@@ -119,7 +152,7 @@ export function SearchFirstPromptBar({
                 ...inputWrapperStyle,
                 background: "white",
                 padding: "14px 20px",
-                transition: "border-radius 200ms cubic-bezier(0.4,0,0.2,1)",
+                transition: `border-radius ${DUR} ${EASE}`,
               }}
             >
               <div className="flex items-center gap-[12px]">
@@ -147,7 +180,7 @@ export function SearchFirstPromptBar({
                     lineHeight: "24px",
                     color: "var(--color-body, #364153)",
                   }}
-                  className="flex-1 bg-transparent border-0 outline-none font-['Plus_Jakarta_Sans',sans-serif] text-[16px] placeholder:text-[#99a1af] tracking-[-0.3125px]"
+                  className="flex-1 bg-transparent border-0 outline-none [font-family:inherit] text-[16px] placeholder:text-[#99a1af] tracking-[-0.3125px]"
                 />
 
                 <button
@@ -186,7 +219,8 @@ export function SearchFirstPromptBar({
               opacity: isOpen && showSuggestions && hasSuggestions ? 1 : 0,
               marginTop: isOpen && showSuggestions && hasSuggestions ? "12px" : "0",
               overflow: "hidden",
-              transition: "all 200ms ease-in-out",
+              position: "relative",
+              transition: `max-height ${DUR} ${EASE}, opacity ${DUR} ${EASE}, margin-top ${DUR} ${EASE}`,
             }}
           >
             <div style={{ borderTop: "1px solid #f3f4f6" }}>

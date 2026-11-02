@@ -132,7 +132,42 @@ function AppInner() {
     setHomeKey((k) => k + 1);
   };
 
+  /** Where the full-page chat was opened from, so closing it can put the viewer back. */
+  const chatReturnRef = useRef<{
+    maturity: MaturityMode;
+    entrance: EntranceTab;
+    homepageView: HomepageView;
+    googleView: GoogleView;
+    searchQuery: string;
+    navSearch: string;
+    activeArticle: ArticleDetails | null;
+  } | null>(null);
+
+  const rememberReturn = () => {
+    if (homepageView === "chat") return;
+    chatReturnRef.current = { maturity, entrance, homepageView, googleView, searchQuery, navSearch, activeArticle };
+  };
+
+  const closeChat = () => {
+    const s = chatReturnRef.current;
+    chatReturnRef.current = null;
+    resetSession();
+    if (!s) {
+      setHomepageView("home");
+      setHomeKey((k) => k + 1);
+      return;
+    }
+    setMaturity(s.maturity);
+    setEntrance(s.entrance);
+    setGoogleView(s.googleView);
+    setHomepageView(s.homepageView);
+    setSearchQuery(s.searchQuery);
+    setNavSearch(s.navSearch);
+    setActiveArticle(s.activeArticle);
+  };
+
   const handleSearch = (query: string) => {
+    if (maturity === "conversational") rememberReturn();
     setSearchQuery(query);
     setChatInitialLearner(null);
     setSearchBridge(null);
@@ -151,6 +186,7 @@ function AppInner() {
 
   const handleStartConversation = (ctx: SearchBridgeContext) => {
     if (maturity === "current") return;
+    rememberReturn();
     setSearchBridge(ctx);
     setArticleBridge(null);
     setSearchQuery(ctx.query);
@@ -161,6 +197,7 @@ function AppInner() {
 
   const handleArticleBridge = (ctx: ArticleBridgeContext) => {
     if (maturity === "current") return;
+    rememberReturn();
     setArticleBridge(ctx.article);
     setSearchBridge(null);
     setSearchQuery(ctx.query);
@@ -172,6 +209,7 @@ function AppInner() {
   };
 
   const handleChatWithAgent = () => {
+    rememberReturn();
     setSearchBridge(null);
     setArticleBridge(null);
     setChatInitialLearner(null);
@@ -183,6 +221,7 @@ function AppInner() {
 
   /** Expands the floating Fin window into the full-page chat, carrying the latest question over. */
   const handleExpandChat = (query?: string) => {
+    rememberReturn();
     setSearchBridge(null);
     setArticleBridge(null);
     setChatInitialLearner(null);
@@ -404,6 +443,7 @@ function AppInner() {
                 : `${chatInitialLearner ?? "chat"}-${skin.id}`
         }
         initialQuery={searchQuery}
+        onClose={closeChat}
         animateBar={chatAnimateBar}
         initialLearner={chatInitialLearner}
         searchContext={searchBridge}
@@ -448,6 +488,7 @@ function AppInner() {
           initialQuery={`Help me with: ${resolvedArticle?.title ?? "this article"}`}
           animateBar={false}
           initialArticle={resolvedArticle}
+          onClose={() => setGoogleView("serp")}
           showSuggestions={features.multiObjectSuggestions}
           showEscalation={features.multiChannelEscalation}
         />

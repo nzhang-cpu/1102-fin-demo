@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, ThumbsUp, ThumbsDown, Plus, Mic, Phone, CheckCheck, ChevronRight } from "lucide-react";
+import { Search, ThumbsUp, ThumbsDown, Plus, Mic, Phone, CheckCheck, ChevronRight, X } from "lucide-react";
 import { useDesignTokens } from "../DesignTokensContext";
 import { TypingIndicator } from "./TypingIndicator";
 import { ArticlePanel } from "./ArticlePanel";
@@ -244,6 +244,8 @@ interface ChatScreenProps {
   /** Skip agent typing delay (instant entry). */
   instantAgent?: boolean;
   showSuggestions?: boolean;
+  /** Leaves the full-page chat and returns to the screen it was opened from. */
+  onClose?: () => void;
   showEscalation?: boolean;
 }
 
@@ -256,6 +258,7 @@ export function ChatScreen({
   initialArticle = null,
   instantAgent = false,
   showSuggestions = true,
+  onClose,
   showEscalation = true,
 }: ChatScreenProps) {
   const { tokens } = useTokens();
@@ -289,6 +292,7 @@ export function ChatScreen({
   const [selectedLearner, setSelectedLearner] = useState<string | null>(initialLearner ?? null);
   const [feedback, setFeedback] = useState<Record<string, "up" | "down" | null>>({});
   const [promptValue, setPromptValue] = useState("");
+  const [greetingDone, setGreetingDone] = useState(false);
   const [finDone, setFinDone] = useState<Record<string, boolean>>({});
   const [chatStartedAt] = useState(() => new Date());
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -327,11 +331,18 @@ export function ChatScreen({
     }, 800);
   }, []);
 
-  const visibleMessages = runtimeMessages.slice(0, visibleCount);
+  const [liveMessages, setLiveMessages] = useState<RuntimeMessage[]>([]);
+  const [liveThinking, setLiveThinking] = useState(false);
+  const liveIdRef = useRef(0);
+  const lastArticleRef = useRef<ArticleDetails | null>(initialArticle ?? articles[0] ?? null);
+  /** Once the viewer sends their own message, the scripted demo lines stop advancing. */
+  const liveMode = liveMessages.length > 0;
+
+  const visibleMessages = [...runtimeMessages.slice(0, visibleCount), ...liveMessages];
   const nextMessage = runtimeMessages[visibleCount] ?? null;
   const canAdvance = visibleCount < runtimeMessages.length;
   // Spacebar only shown when the next message to reveal is a user message
-  const showSpacebar = canAdvance && !isThinking && nextMessage?.role === "user";
+  const showSpacebar = canAdvance && !isThinking && !liveMode && nextMessage?.role === "user";
 
   const followUpNudges = useMemo(() => {
     const categoryHint = searchContext?.results?.[0]?.category
@@ -340,7 +351,76 @@ export function ChatScreen({
     return followUpNudgesForQuery(initialQuery || searchContext?.query || "", categoryHint);
   }, [initialQuery, searchContext, initialArticle]);
 
+  /** Demo-only canned answers so the viewer can keep talking to Fin. */
+  const dummyReply = (text: string): { content: string; citations: string[] } => {
+    const q = text.toLowerCase();
+    const last = lastArticleRef.current ?? articles[0];
+    const steps = (a: ArticleDetails) =>
+      a.content
+        .split("\n\n")
+        .slice(1)
+        .map((b) => (b.includes("\n") ? b.slice(b.indexOf("\n") + 1) : b))
+        .slice(0, 3)
+        .map((s, i) => `${i + 1}. ${s}`)
+        .join("\n");
+
+    if (/summar|key step/.test(q) && last) {
+      lastArticleRef.current = last;
+      return { content: `Here are the key steps from “${last.title}”:\n\n${steps(last)}`, citations: [last.title] };
+    }
+    if (/\bnext\b/.test(q) && last) {
+      return {
+        content:
+          "Once that’s done, save your boarding pass to your phone wallet and plan to arrive at the airport at least 90 minutes before departure.\n\nThis is a demo reply, so timings are illustrative.",
+        citations: [last.title],
+      };
+    }
+    const words = q.split(/\W+/).filter((w) => w.length > 2 && !["how", "the", "for", "and", "can", "you", "what", "which", "article", "most", "relevant"].includes(w));
+    const scored = articles
+      .map((a) => ({
+        a,
+        s: words.reduce((n, w) => n + (`${a.title} ${a.category} ${a.content}`.toLowerCase().includes(w) ? 1 : 0), 0),
+      }))
+      .filter((r) => r.s > 0)
+      .sort((x, y) => y.s - x.s);
+    const best = /relevant|article/.test(q) ? last : scored[0]?.a;
+    if (best) {
+      lastArticleRef.current = best;
+      const summary = (best as ArticleDetails & { summary?: string }).summary ?? best.subtitle;
+      return {
+        content: /relevant|article/.test(q)
+          ? `The most relevant article for this is “${best.title}”.\n\n${summary}`
+          : `${summary}\n\nWould you like me to walk through the steps?`,
+        citations: [best.title],
+      };
+    }
+    return {
+      content:
+        "Thanks for your question! I’m a demo assistant, so I don’t have a live answer for that — but I can help with check-in, seats, baggage, changing a flight or MileagePlus.",
+      citations: [],
+    };
+  };
+
+  const sendLive = (raw: string) => {
+    const text = raw.trim();
+    if (!text || liveThinking || isThinking) return;
+    setPromptValue("");
+    setDropdownOpen(false);
+    const id = (kind: string) => `live-${kind}-${liveIdRef.current++}`;
+    setLiveMessages((m) => [...m, { id: id("u"), role: "user", content: text, citations: [], timestamp: new Date() }]);
+    setLiveThinking(true);
+    setTimeout(() => {
+      const reply = dummyReply(text);
+      setLiveMessages((m) => [...m, { id: id("a"), role: "agent", ...reply, timestamp: new Date() }]);
+      setLiveThinking(false);
+    }, 1300);
+  };
+
   const handleFollowUpNudge = (nudge: AiNudge) => {
+    if (skin.host.agent) {
+      sendLive(nudge.label);
+      return;
+    }
     setPromptValue(nudge.label);
     setDropdownOpen(false);
     setSuggestionsReady(false);
@@ -366,11 +446,11 @@ export function ChatScreen({
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }
-  }, [visibleCount, isThinking]);
+  }, [visibleCount, isThinking, liveMessages.length, liveThinking]);
 
   // Auto-advance agent messages with a typing indicator delay
   useEffect(() => {
-    if (!canAdvance || nextMessage?.role !== "agent") return;
+    if (!canAdvance || liveMode || nextMessage?.role !== "agent") return;
     setIsThinking(true);
     const timer = setTimeout(() => {
       setIsThinking(false);
@@ -399,11 +479,23 @@ export function ChatScreen({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
-      className={`flex h-full w-full overflow-hidden ${
+      className={`relative flex h-full w-full overflow-hidden ${
         helpChat ? "gap-0 bg-white" : "gap-[20px] pl-[10px] pr-[20px] py-[10px]"
       }`}
       style={helpChat ? { fontFamily: helpFont } : undefined}
     >
+      {helpChat && skin.host.agent && onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close chat"
+          className="absolute right-[20px] top-[14px] z-10 inline-flex items-center gap-[6px] h-[34px] px-[14px] rounded-full border bg-white text-[13px] font-semibold hover:bg-black/[0.04] transition-colors"
+          style={{ borderColor: dt.colors.ui.borderLight, color: dt.colors.brand.navy }}
+        >
+          <X className="size-[14px]" />
+          Close
+        </button>
+      )}
       <motion.div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
         <div
           className={`flex flex-col h-full w-full min-h-0 mx-auto ${
@@ -440,9 +532,12 @@ export function ChatScreen({
                       className="rounded-[16px] px-[16px] py-[12px] text-[15px] leading-[22px]"
                       style={{ background: chatAgentBubble, color: dt.colors.ui.body }}
                     >
-                      <div className="whitespace-pre-line text-[15px] leading-[22px]">{skin.host.agent.greeting}</div>
+                      <FinCitedText animate text={skin.host.agent.greeting} citations={[]} onDone={() => setGreetingDone(true)} />
                     </div>
-                    <span className="mt-[6px] text-[11px]" style={{ color: dt.colors.ui.mutedDark }}>
+                    <span
+                      className="mt-[6px] text-[11px] transition-opacity duration-200"
+                      style={{ color: dt.colors.ui.mutedDark, opacity: greetingDone ? 1 : 0 }}
+                    >
                       {skin.host.agent.label} · {formatChatClock(chatStartedAt)}
                     </span>
                   </div>
@@ -672,7 +767,7 @@ export function ChatScreen({
                   </motion.div>
                 ))}
 
-                {isThinking && (
+                {(isThinking || liveThinking) && (
                   <motion.div
                     key="thinking"
                     initial={{ opacity: 0, y: 8 }}
@@ -739,6 +834,8 @@ export function ChatScreen({
                     <FinComposer
                       value={promptValue}
                       onChange={handlePromptChange}
+                      onSend={() => sendLive(promptValue)}
+                      disabled={liveThinking || isThinking}
                       onFocus={() => promptValue.trim() && setDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
                     />

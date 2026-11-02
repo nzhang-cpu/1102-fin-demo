@@ -1,18 +1,35 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { useDesignTokens } from "../../DesignTokensContext";
 import { AiSummaryFeedback } from "../AiAssistCard";
+import { FinCitation } from "./FinCitation";
+
+export interface SummarySource {
+  title: string;
+  source: string;
+  onOpen?: () => void;
+}
 
 interface FinAiSummaryProps {
-  /** Summary copy; may include inline links. Clamped to three lines with View more. */
-  children: ReactNode;
+  /** Lead sentence; its key phrase is highlighted. Clamped to three lines with View more. */
+  lead: string;
+  /** Optional detail copy; {{n}} markers become citation badges for sources[n - 1]. */
+  body?: string;
+  sources?: SummarySource[];
   /** Sends a question to Fin; omit to hide the chat box. */
   onAsk?: (query: string) => void;
   showFeedback?: boolean;
 }
 
 /** United-style AI summary card shared by the search results and article pages. */
-export function FinAiSummary({ children, onAsk, showFeedback = false }: FinAiSummaryProps) {
+/** Splits a sentence into [before, key phrase, after] so the answer can be highlighted. */
+function splitHighlight(s: string): [string, string, string] {
+  const m = s.match(/^(.{24,100}?)(?=,| then | and |;|\.|$)/);
+  const hl = m ? m[1] : s;
+  return ["", hl, s.slice(hl.length)];
+}
+
+export function FinAiSummary({ lead, body, sources = [], onAsk, showFeedback = false }: FinAiSummaryProps) {
   const { dt } = useDesignTokens();
   const host = dt.colors.host;
   const ui = dt.colors.ui;
@@ -28,6 +45,14 @@ export function FinAiSummary({ children, onAsk, showFeedback = false }: FinAiSum
     if (el && !expanded) setOverflows(el.scrollHeight > el.clientHeight + 1);
   });
 
+  const [before, hl, after] = splitHighlight(lead);
+  const renderBody = (text: string) =>
+    text.split(/\{\{(\d+)\}\}/).map((part, i) => {
+      if (i % 2 === 0) return <span key={i}>{part}</span>;
+      const s = sources[Number(part) - 1];
+      return s ? <FinCitation key={i} n={Number(part)} title={s.title} source={s.source} onOpen={s.onOpen} /> : null;
+    });
+
   const submit = () => {
     const q = draft.trim();
     if (!q) return;
@@ -37,15 +62,12 @@ export function FinAiSummary({ children, onAsk, showFeedback = false }: FinAiSum
 
   return (
     <div
-      className="mb-[18px] rounded-[10px] border overflow-hidden shadow-[0_1px_2px_rgba(13,115,119,0.04)]"
-      style={{
-        borderColor: `${host.aiSummaryAccent}33`,
-        background: `linear-gradient(to bottom, ${host.aiSummaryBg}, ${host.pageBg})`,
-      }}
+      className="mb-[18px] rounded-[10px] border bg-white overflow-hidden"
+      style={{ borderColor: "#D6D6D6", borderTop: `4px solid ${host.link}` }}
     >
       <div className="px-[18px] pt-[16px] pb-[14px]">
-        <div className="flex items-center gap-[8px] mb-[10px]">
-          <span className="text-[15px] font-bold" style={{ color: brand.navy }}>
+        <div className="flex items-center mb-[14px]">
+          <span className="text-[16px] font-semibold" style={{ color: host.link }}>
             AI Summary
           </span>
         </div>
@@ -54,7 +76,16 @@ export function FinAiSummary({ children, onAsk, showFeedback = false }: FinAiSum
           className={`text-[15px] leading-[22px] mb-[4px] ${expanded ? "" : "line-clamp-3"}`}
           style={{ color: ui.body }}
         >
-          {children}
+          {before}
+          <mark
+            className="rounded-[3px] px-[2px] font-semibold text-inherit"
+            style={{ background: `${host.link}26`, boxDecorationBreak: "clone", WebkitBoxDecorationBreak: "clone" }}
+          >
+            {hl}
+          </mark>
+          {after}
+          {body ? " " : ""}
+          {body ? renderBody(body) : sources.map((s, i) => <FinCitation key={s.title} n={i + 1} title={s.title} source={s.source} onOpen={s.onOpen} />)}
         </p>
         {(overflows || expanded) && (
           <button
@@ -66,27 +97,16 @@ export function FinAiSummary({ children, onAsk, showFeedback = false }: FinAiSum
             {expanded ? "View less" : "View more"}
           </button>
         )}
-        <div className="flex items-start justify-between gap-[12px] flex-wrap">
-          <p className="text-[12px] leading-[16px] flex-1 min-w-[180px]" style={{ color: ui.muted }}>
-            Summarized by AI, so it may occasionally be wrong. Please don’t share payment or ID numbers.
-          </p>
-          {showFeedback && <AiSummaryFeedback />}
-        </div>
+        {showFeedback && <AiSummaryFeedback />}
       </div>
 
       {onAsk && (
         <div className="px-[18px] pb-[14px]">
           <div
             className={`relative rounded-[999px] p-[1.5px] transition-shadow duration-200 ${
-              focused
-                ? "shadow-[0_0_0_3px_rgba(13,115,119,0.12),0_8px_24px_rgba(13,115,119,0.12)]"
-                : "shadow-[0_2px_10px_rgba(15,40,50,0.06)]"
+              focused ? "shadow-[0_0_0_3px_rgba(20,20,210,0.14)]" : "shadow-[0_2px_10px_rgba(15,40,50,0.06)]"
             }`}
-            style={{
-              background: focused
-                ? `linear-gradient(110deg, ${host.aiSummaryAccent} 0%, #1A8FA8 45%, ${host.link} 100%)`
-                : "linear-gradient(110deg, #C5D5DC 0%, #D7E2E8 50%, #C9D4E0 100%)",
-            }}
+            style={{ background: focused ? host.link : ui.borderLight }}
           >
             <div className="flex items-center gap-[8px] rounded-full bg-white pl-[16px] pr-[6px] py-[6px]">
               <input
