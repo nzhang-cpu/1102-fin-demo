@@ -17,6 +17,26 @@ interface HostShellProps {
   showChatFab?: boolean;
 }
 
+/** Smiling chat bubble on a brand-colored disc; fills the whole chat button. */
+function ChatBubbleMark({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 447 447" className="size-full" aria-hidden>
+      <circle cx="223.5" cy="223.5" r="223.5" fill={color} />
+      <path
+        d="M138 109H308C322.6 109 334.5 120.9 334.5 135.5V365.5L267.5 337.5H138C123.4 337.5 111.5 325.6 111.5 311V135.5C111.5 120.9 123.4 109 138 109Z"
+        fill="#FFFFFF"
+      />
+      <path
+        d="M150.5 274.5C188.5 305.5 254.8 307.5 296.5 274"
+        fill="none"
+        stroke={color}
+        strokeWidth="16"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /**
  * Optional help-center host chrome driven by design tokens.
  * Used when skin.host.shell === "help-center". Brand label comes from content tokens.
@@ -263,6 +283,8 @@ export function HostShell({
         >
           {hasMessenger && messengerOpen ? (
             <ChevronDown className="size-[22px]" />
+          ) : hasMessenger ? (
+            <ChatBubbleMark color={host.link} />
           ) : (
             <MessageCircle className="size-[22px]" />
           )}
