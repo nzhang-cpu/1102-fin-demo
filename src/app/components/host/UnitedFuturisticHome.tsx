@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { ArrowUpRight, Plane } from "lucide-react";
 import { SearchFirstPromptBar } from "../SearchFirstPromptBar";
@@ -15,6 +16,54 @@ const BLUE = "#1414D2";
 const VIOLET = "#6B5BFF";
 const CYAN = "#22D3EE";
 const GRADIENT = `linear-gradient(120deg, ${BLUE} 0%, ${VIOLET} 55%, ${CYAN} 100%)`;
+
+const HELP_TOPICS = [
+  { label: "check in your flight", query: "Check in" },
+  { label: "check immigration requirements", query: "Immigration requirements for Paris" },
+  { label: "book ground transportation in Paris", query: "Ground transportation in Paris" },
+];
+
+/** Rotates through short links in place; the slot is as wide as the longest one so the line never shifts. */
+function HelpCarousel({ items, onPick }: { items: { label: string; query: string }[]; onPick?: (query: string) => void }) {
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    if (paused) return;
+    const id = window.setInterval(() => setI((n) => (n + 1) % items.length), 2800);
+    return () => window.clearInterval(id);
+  }, [items.length, paused]);
+  return (
+    <span
+      className="inline-grid text-left"
+      aria-live="polite"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {items.map((t, k) => {
+        const active = k === i;
+        const prev = k === (i + items.length - 1) % items.length;
+        return (
+          <button
+            key={t.label}
+            type="button"
+            tabIndex={active ? 0 : -1}
+            aria-hidden={!active}
+            onClick={() => onPick?.(t.query)}
+            className="col-start-1 row-start-1 justify-self-start whitespace-nowrap underline underline-offset-[3px] transition-all duration-500 ease-out hover:text-black/80"
+            style={{
+              color: "inherit",
+              opacity: active ? 1 : 0,
+              pointerEvents: active ? "auto" : "none",
+              transform: active ? "translateY(0)" : prev ? "translateY(-60%)" : "translateY(60%)",
+            }}
+          >
+            {t.label}
+          </button>
+        );
+      })}
+    </span>
+  );
+}
 
 const QUICK = ["Check in", "Baggage allowance", "Change or cancel", "Refunds and credits"];
 
@@ -78,15 +127,15 @@ export function UnitedFuturisticHome({ onSearch, variant, showSuggestions = true
           </span>
         </div>
 
-        <h1 className="mt-[24px] text-center text-balance text-[44px] sm:text-[48px] font-bold leading-[1.1] tracking-[-0.03em]">
-          Hi {name}, Paris is tomorrow.
-          <br />
+        <h1 className="mt-[24px] text-center text-balance text-[40px] sm:text-[44px] font-bold leading-[1.15] tracking-[-0.025em]">
+          Hi {name}, your trip to{" "}
           <span className="bg-clip-text text-transparent" style={{ backgroundImage: GRADIENT }}>
-            What can Fin sort out first?
+            Paris is on schedule for tomorrow.
           </span>
         </h1>
-        <p className="mt-[16px] mx-auto max-w-[600px] text-center text-pretty text-[16px] leading-[24px] text-black/60">
-          Check-in opens in 3 hours. Ask Fin about bags, seats or bringing your pet.
+        <p className="mt-[16px] flex items-baseline justify-center text-[16px] leading-[24px] text-black/60">
+          <span>I can help you with:&nbsp;</span>
+          <HelpCarousel items={HELP_TOPICS} onPick={onSearch} />
         </p>
 
         <div className={`mt-[32px] rounded-[24px] p-[12px] ${glass}`}>

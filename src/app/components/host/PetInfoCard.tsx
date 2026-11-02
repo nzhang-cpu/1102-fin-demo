@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Bird, Cat, Check, CheckCircle2, Dog, FileText, Loader2, Rabbit, Upload, X, type LucideIcon } from "lucide-react";
+import { Check, CheckCircle2, FileText, Loader2, Upload, X } from "lucide-react";
+import catImg from "../../assets/pets/cat.jpg";
+import dogImg from "../../assets/pets/dog.jpg";
+import rabbitImg from "../../assets/pets/rabbit.jpg";
+import birdImg from "../../assets/pets/bird.jpg";
 import { useDesignTokens } from "../../DesignTokensContext";
 import { useAutoplay } from "../../AutoplayContext";
 import { gate } from "../../storyGate";
 
 export type PetType = "cat" | "dog" | "rabbit" | "bird";
 
-const PETS: { id: PetType; label: string; icon: LucideIcon }[] = [
-  { id: "cat", label: "Cat", icon: Cat },
-  { id: "dog", label: "Dog", icon: Dog },
-  { id: "rabbit", label: "Rabbit", icon: Rabbit },
-  { id: "bird", label: "Bird", icon: Bird },
+const PETS: { id: PetType; label: string; image: string }[] = [
+  { id: "cat", label: "Cat", image: catImg },
+  { id: "dog", label: "Dog", image: dogImg },
+  { id: "rabbit", label: "Rabbit", image: rabbitImg },
+  { id: "bird", label: "Bird", image: birdImg },
 ];
 
 const FILE_POOL = [
@@ -167,7 +171,6 @@ export function PetInfoCard({ onPetTypeConfirm, onComplete }: PetInfoCardProps) 
             </p>
             <div className="mt-[16px] grid grid-cols-4 gap-[10px]">
               {PETS.map((p) => {
-                const Icon = p.icon;
                 const on = pet === p.id;
                 return (
                   <motion.button
@@ -177,19 +180,27 @@ export function PetInfoCard({ onPetTypeConfirm, onComplete }: PetInfoCardProps) 
                     onClick={() => setPet(p.id)}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="relative flex flex-col items-center gap-[8px] rounded-[12px] border-2 px-[6px] py-[16px] transition-colors"
-                    style={{ borderColor: on ? blue : ui.borderLight, background: on ? "#F2F2FF" : "#fff" }}
+                    className="relative overflow-hidden rounded-[12px] border-2 text-left transition-colors"
+                    style={{
+                      borderColor: on ? blue : ui.borderLight,
+                      boxShadow: on ? "0 6px 18px rgba(20,20,210,0.18)" : "none",
+                    }}
                   >
                     {on && (
                       <span
-                        className="absolute right-[6px] top-[6px] flex size-[18px] items-center justify-center rounded-full text-white"
+                        className="absolute right-[6px] top-[6px] z-10 flex size-[20px] items-center justify-center rounded-full text-white"
                         style={{ background: blue }}
                       >
-                        <Check className="size-[11px]" strokeWidth={3} />
+                        <Check className="size-[12px]" strokeWidth={3} />
                       </span>
                     )}
-                    <Icon className="size-[30px]" strokeWidth={1.6} style={{ color: on ? blue : ui.body }} />
-                    <span className="text-[14px] font-semibold">{p.label}</span>
+                    <img src={p.image} alt={p.label} className="block aspect-square w-full object-cover" />
+                    <span
+                      className="block py-[8px] text-center text-[14px] font-semibold"
+                      style={{ background: on ? "#F2F2FF" : "#fff" }}
+                    >
+                      {p.label}
+                    </span>
                   </motion.button>
                 );
               })}
