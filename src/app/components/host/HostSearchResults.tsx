@@ -14,6 +14,8 @@ import { useDesignTokens } from "../../DesignTokensContext";
 import { useTokens } from "../../TokensContext";
 import { type SortOption } from "../SearchResultsControls";
 import { AiSummaryFeedback } from "../AiAssistCard";
+import { FinAiSummary } from "./FinAiSummary";
+import { HostBreadcrumb } from "./HostBreadcrumb";
 import { buildSmartSummary } from "../SmartSummaryBlock";
 import type { SearchBridgeContext } from "../SearchResultsScreen";
 
@@ -171,20 +173,7 @@ export function HostSearchResults({
       style={{ fontFamily: font, background: host.pageBg, color: ui.body }}
     >
       <div className="max-w-[880px] mx-auto px-[24px] py-[22px] pb-[80px]">
-        <nav className="text-[13px] mb-[14px]" style={{ color: ui.muted }} aria-label="Breadcrumb">
-          <button
-            type="button"
-            className="hover:underline"
-            style={{ color: host.link }}
-            onClick={onHome}
-          >
-            Help Center
-          </button>
-          <span className="mx-[6px]" style={{ color: ui.muted }}>
-            ›
-          </span>
-          <span style={{ color: brand.navy }}>Search</span>
-        </nav>
+        <HostBreadcrumb items={[{ label: "Help Center", onClick: onHome }, { label: "Search" }]} />
 
         <h1
           className="text-[32px] font-bold tracking-[-0.02em] mb-[18px]"
@@ -236,7 +225,16 @@ export function HostSearchResults({
           </button>
         </div>
 
-        {showSmartSummary && (
+        {showSmartSummary && compactSummary && (
+          <FinAiSummary
+            onAsk={onStartConversation ? (q) => submitAsk(q) : undefined}
+            showFeedback={showSummaryFeedback}
+          >
+            {summaryPlain} {smartSummary.detail.split("\n\n")[0].replace(/\{\{\d+\}\}/g, "")}
+          </FinAiSummary>
+        )}
+
+        {showSmartSummary && !compactSummary && (
           <div
             className="mb-[18px] rounded-[10px] border overflow-hidden shadow-[0_1px_2px_rgba(13,115,119,0.04)]"
             style={{

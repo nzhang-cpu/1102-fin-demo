@@ -1,3 +1,6 @@
+import { HostBreadcrumb } from "./host/HostBreadcrumb";
+import { FinAiSummary } from "./host/FinAiSummary";
+import { UnitedFooter } from "./host/UnitedFooter";
 import { X } from "lucide-react";
 import { useTokens } from "../TokensContext";
 import { useSkin } from "../SkinContext";
@@ -65,6 +68,8 @@ function HelpArticleLayout({
 }) {
   const { tokens } = useTokens();
   const { dt } = useDesignTokens();
+  const { skin } = useSkin();
+  const finStyle = !!skin.host.agent;
   const catalog = (tokens.articles?.learning ?? []) as ArticleDetails[];
   const suggested = catalog
     .filter((a) => a.title !== article.title && a.category === article.category)
@@ -111,30 +116,22 @@ function HelpArticleLayout({
       )}
       <div
         className={`flex-1 min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
-          compact ? "px-[16px] py-[14px]" : "px-[28px] py-[20px]"
+          compact ? "px-[16px] py-[14px]" : finStyle ? "flex flex-col" : "px-[28px] py-[20px]"
         }`}
       >
-        <nav className="text-[12px] mb-[18px]" style={{ color: muted }} aria-label="Breadcrumb">
-          <button
-            type="button"
-            className="hover:underline"
-            style={{ color: link }}
-            onClick={onHome}
-          >
-            Help Center
-          </button>
-          <span className="mx-[6px]" style={{ color: dt.colors.ui.muted }}>
-            ›
-          </span>
-          <span>{article.category}</span>
-          <span className="mx-[6px]" style={{ color: dt.colors.ui.muted }}>
-            ›
-          </span>
-          <span style={{ color: body }}>{article.title}</span>
-        </nav>
+        <div className={finStyle ? "flex-1 px-[24px] pt-[22px] pb-[56px]" : ""}>
+        <div className={finStyle ? "max-w-[880px] mx-auto" : ""}>
+          <HostBreadcrumb
+            items={[
+              { label: "Help Center", onClick: onHome },
+              { label: article.category },
+              { label: article.title },
+            ]}
+          />
+        </div>
 
         <div className={`flex items-start ${compact ? "flex-col gap-[16px]" : "gap-[28px]"}`}>
-          <div className="flex-1 min-w-0 max-w-[720px]">
+          <div className={`flex-1 min-w-0 ${finStyle ? "max-w-[880px] mx-auto" : "max-w-[720px]"}`}>
             <h1
               className="text-[28px] sm:text-[32px] font-bold tracking-[-0.02em] leading-[1.2] mb-[20px]"
               style={{ color: body }}
@@ -142,7 +139,16 @@ function HelpArticleLayout({
               {article.title}
             </h1>
 
-            {showAiAssist && article.summary && (
+            {finStyle && showAiAssist && article.summary && (
+              <FinAiSummary
+                showFeedback={showSummaryFeedback}
+                onAsk={(q) => window.dispatchEvent(new CustomEvent("open-fin-chat", { detail: { query: q } }))}
+              >
+                {article.summary}
+              </FinAiSummary>
+            )}
+
+            {!finStyle && showAiAssist && article.summary && (
               <div
                 className="mb-[20px] rounded-[8px] border bg-white p-[16px]"
                 style={{ borderColor: border }}
@@ -227,6 +233,7 @@ function HelpArticleLayout({
             </div>
           </div>
 
+          {!finStyle && (
           <aside
             className={`shrink-0 rounded-[8px] border bg-white p-[18px] shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${
               compact ? "w-full" : "w-[280px]"
@@ -251,7 +258,10 @@ function HelpArticleLayout({
               ))}
             </ul>
           </aside>
+          )}
         </div>
+        </div>
+        {finStyle && <UnitedFooter />}
       </div>
     </div>
   );

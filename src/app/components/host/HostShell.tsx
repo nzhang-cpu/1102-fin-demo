@@ -45,9 +45,14 @@ export function HostShell({
   useEffect(() => {
     if (!hasMessenger) return;
     const open = () => setMessengerOpen(true);
+    const expand = (e: Event) => onExpandChat?.((e as CustomEvent<{ query?: string }>).detail?.query);
     window.addEventListener("open-fin-messenger", open);
-    return () => window.removeEventListener("open-fin-messenger", open);
-  }, [hasMessenger]);
+    window.addEventListener("open-fin-chat", expand);
+    return () => {
+      window.removeEventListener("open-fin-messenger", open);
+      window.removeEventListener("open-fin-chat", expand);
+    };
+  }, [hasMessenger, onExpandChat]);
 
   useEffect(() => {
     setDraft(searchValue);
