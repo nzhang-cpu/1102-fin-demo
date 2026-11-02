@@ -433,14 +433,14 @@ export function ChatScreen({
               )}
 
               {helpChat && skin.host.agent && (
-                <div className="flex gap-[10px] items-end max-w-[88%] mb-[18px]">
+                <div className="flex gap-[10px] items-start max-w-[88%] mb-[18px]">
                   <HelpChatBotAvatar bg={chatAvatarBg} letter={skin.host.agent?.label[0]} logo={skin.host.agent?.logo} />
                   <div className="flex flex-col items-start min-w-0">
                     <div
                       className="rounded-[16px] px-[16px] py-[12px] text-[15px] leading-[22px]"
                       style={{ background: chatAgentBubble, color: dt.colors.ui.body }}
                     >
-                      {skin.host.agent.greeting}
+                      <div className="whitespace-pre-line text-[15px] leading-[22px]">{skin.host.agent.greeting}</div>
                     </div>
                     <span className="mt-[6px] text-[11px]" style={{ color: dt.colors.ui.mutedDark }}>
                       {skin.host.agent.label} · {formatChatClock(chatStartedAt)}

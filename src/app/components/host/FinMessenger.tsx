@@ -49,13 +49,12 @@ export function FinMessenger({
   const ui = dt.colors.ui;
   const agent = skin.host.agent;
   const label = agent?.label ?? "Fin";
-  const userName = tokens.hero?.userName || "there";
 
   const [messages, setMessages] = useState<MessengerMessage[]>([
     {
       id: 0,
       role: "agent",
-      text: `Hi ${userName}, you're speaking with Fin, United's AI agent. How can I help?`,
+      text: agent?.greeting ?? "How can I help you today?",
       at: new Date(),
     },
   ]);
@@ -69,6 +68,8 @@ export function FinMessenger({
   const nextId = useRef(1);
 
   useEffect(() => {
+    // keep the long greeting readable from its first line until the chat gets going
+    if (messages.length === 1 && !typing) return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, typing]);
 

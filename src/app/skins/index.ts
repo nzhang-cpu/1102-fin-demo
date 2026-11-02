@@ -382,7 +382,12 @@ export const COMPANY_SKINS: CompanySkin[] = [
           "What's my baggage allowance?",
           "Change or cancel my flight",
         ],
-        greeting: "Hi, I'm Fin! I'm United's virtual assistant. How can I help you today?",
+        greeting: [
+          "Welcome to United Messaging!",
+          "I’m United’s AI-powered Virtual Assistant here to help answer your travel questions. [Note: Some answers may be AI-generated based on content from united.com. Please check the source links for up-to-date information.]",
+          "Don’t want to be tied to your desktop? For the same service on the go, text “UNITED” to 32050 on your mobile device.",
+          "How can I help you today?",
+        ].join("\n\n"),
       },
       navItems: ["Booking", "Manage my trips", "Travel info", "MileagePlus", "United cards", "Deals", "Help"],
     },
