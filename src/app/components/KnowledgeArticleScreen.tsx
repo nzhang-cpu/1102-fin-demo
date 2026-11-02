@@ -4,6 +4,7 @@ import { ArticlePanel, type ArticleAiNudge } from "./ArticlePanel";
 import { AiAssistCard } from "./AiAssistCard";
 import { ArticleZoneChat } from "./ArticleZoneChat";
 import { useTokens } from "../TokensContext";
+import { useSkin } from "../SkinContext";
 
 export interface ArticleDetails {
   title: string;
@@ -199,6 +200,9 @@ export function KnowledgeArticleScreen({
   };
 
   const isAiZone = layoutVariant === "ai-zone" && showAiAssist;
+  const { skin } = useSkin();
+  /** United pages run edge to edge so the site footer spans the whole browser width. */
+  const fullBleed = !!skin.host.agent && !isAiZone;
 
   return (
     <motion.div
@@ -210,7 +214,9 @@ export function KnowledgeArticleScreen({
       className={`flex h-full w-full overflow-hidden ${
         isAiZone
           ? "flex-row gap-[16px] px-[16px] py-[14px]"
-          : "flex-col items-center px-[24px] py-[16px]"
+          : fullBleed
+            ? "flex-col"
+            : "flex-col items-center px-[24px] py-[16px]"
       }`}
     >
       <AnimatePresence mode="popLayout" initial={false}>
@@ -252,7 +258,7 @@ export function KnowledgeArticleScreen({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-full max-w-[720px] flex-1 min-h-0"
+            className={`w-full flex-1 min-h-0 ${fullBleed ? "" : "max-w-[720px]"}`}
           >
             <ArticlePanel
               article={article}

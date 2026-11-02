@@ -58,11 +58,79 @@ function citationFrom(article: ArticleLike | undefined, id: number, fallbackTitl
   };
 }
 
+const STOPWORDS = new Set([
+  "how", "do", "does", "can", "what", "when", "where", "why", "the", "and", "for", "you", "your", "with",
+  "are", "was", "will", "have", "has", "get", "need", "want", "about", "tell", "more", "from", "this", "that",
+]);
+
+function queryWords(query: string) {
+  return query
+    .toLowerCase()
+    .split(/\W+/)
+    .filter((w) => w.length > 2 && !STOPWORDS.has(w))
+    .map((w) => w.replace(/s$/, ""));
+}
+
+/** Rank catalog articles by how well they match the query words (title > category > body). */
+function rankArticles(query: string, catalog: ArticleLike[]) {
+  const words = queryWords(query);
+  return catalog
+    .map((a) => {
+      const title = a.title.toLowerCase();
+      const cat = a.category.toLowerCase();
+      const body = `${a.summary ?? ""} ${a.subtitle} ${a.content}`.toLowerCase();
+      const score = words.reduce(
+        (s, w) => s + (title.includes(w) ? 3 : 0) + (cat.includes(w) ? 2 : 0) + (body.includes(w) ? 1 : 0),
+        0,
+      );
+      return { a, score };
+    })
+    .filter((r) => r.score > 0)
+    .sort((x, y) => y.score - x.score)
+    .map((r) => r.a);
+}
+
+/** Summary drawn from the best-matching knowledge articles, for catalogs without hand-written answers. */
+function summaryFromCatalog(query: string, catalog: ArticleLike[]): SmartSummaryModel {
+  const ranked = rankArticles(query, catalog);
+  const top = ranked[0] ?? catalog[0];
+  const second = ranked[1];
+  const bodies = top.content
+    .split("\n\n")
+    .slice(1)
+    .map((block) => {
+      const nl = block.indexOf("\n");
+      return (nl === -1 ? block : block.slice(nl + 1)).trim();
+    })
+    .filter(Boolean);
+  const first = bodies[0] ?? "";
+  const rest = bodies.slice(1).join(" ");
+  const detail = [
+    `${first}{{1}} ${rest}`.trim(),
+    second ? `Related: ${second.summary ?? second.subtitle}{{2}}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+  const count = second ? 2 : 1;
+  return {
+    question: top.title,
+    leadBefore: "",
+    highlight: top.summary ?? top.subtitle,
+    leadAfter: "",
+    detail,
+    citations: [citationFrom(top, 1, top.title), ...(second ? [citationFrom(second, 2, second.title)] : [])],
+    info: `Based on ${count} knowledge article${count > 1 ? "s" : ""} · Updated ${top.lastUpdated}`,
+  };
+}
+
 /** Build a direct-answer summary tuned to the query (demo content). */
 export function buildSmartSummary(query: string, catalog: ArticleLike[]): SmartSummaryModel {
   const q = query.toLowerCase();
   const byTitle = (partial: string) =>
     catalog.find((a) => a.title.toLowerCase().includes(partial.toLowerCase()));
+
+  const hasCuratedCatalog = Boolean(byTitle("Respond to a Dispute"));
+  if (!hasCuratedCatalog && catalog.length > 0) return summaryFromCatalog(query, catalog);
 
   const disputeArticle = byTitle("Respond to a Dispute") ?? catalog[0];
   const payoutArticle = byTitle("Payout on Hold") ?? catalog[1];
