@@ -40,7 +40,7 @@ interface TopicLink {
   blurb: string;
 }
 
-interface Topic {
+export interface Topic {
   label: string;
   icon: LucideIcon;
   intro: string;
@@ -50,7 +50,7 @@ interface Topic {
 const BLUE = "#1414D2";
 const INK = "#000000";
 
-const TOPICS: Topic[] = [
+export const TOPICS: Topic[] = [
   {
     label: "Accessibility and assistance",
     icon: Accessibility,
@@ -219,7 +219,7 @@ const TOPICS: Topic[] = [
   },
 ];
 
-const HELP_OPTIONS: { icon: LucideIcon; title: string; note?: string; link?: string; action?: "chat" | "search" }[] = [
+export const HELP_OPTIONS: { icon: LucideIcon; title: string; note?: string; link?: string; action?: "chat" | "search" }[] = [
   { icon: Search, title: "Search united.com", link: "Find answers", action: "search" },
   { icon: Smartphone, title: "Text an agent", note: 'Text "UNITED" to 32050.' },
   { icon: MessagesSquare, title: "Chat with us", note: "Agents available", link: "Chat now", action: "chat" },

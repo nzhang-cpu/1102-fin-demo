@@ -29,6 +29,9 @@ import {
   type FeatureId,
 } from "@/app/components/FeatureChecklist";
 import { CompanySkins } from "@/app/components/CompanySkins";
+import { AutoplayToggle } from "@/app/components/AutoplayToggle";
+import { AutoplayProvider } from "@/app/AutoplayContext";
+import { STORY_ADVANCE, hasPendingGate } from "@/app/storyGate";
 import { HostShell } from "@/app/components/host/HostShell";
 import { SkinProvider, useSkin } from "@/app/SkinContext";
 import { TokensProvider, useTokens } from "@/app/TokensContext";
@@ -67,6 +70,12 @@ function AppInner() {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.code === "Space" && hasPendingGate()) {
+        // autoplay is off and the story is waiting: Space moves it to the next beat
+        e.preventDefault();
+        window.dispatchEvent(new Event(STORY_ADVANCE));
+        return;
+      }
       if (e.key === "k" || e.key === "K") {
         e.preventDefault();
         setControlsOpen((v) => !v);
@@ -379,13 +388,15 @@ function AppInner() {
             maturity === "current" &&
             skin.layout.home !== "help-mirror" &&
             skin.layout.home !== "help-pathway" &&
-            skin.layout.home !== "united-help"
+            skin.layout.home !== "united-help" &&
+            skin.layout.home !== "united-futuristic"
           }
           showBotFab={
             maturity === "current" &&
             skin.layout.home !== "help-mirror" &&
             skin.layout.home !== "help-pathway" &&
-            skin.layout.home !== "united-help"
+            skin.layout.home !== "united-help" &&
+            skin.layout.home !== "united-futuristic"
           }
           onOpenArticle={handleTreeArticle}
           personalizedHeader={features.customHeader}
@@ -550,6 +561,7 @@ function AppInner() {
               flags={features}
               onChange={handleFeatureChange}
             />
+            <AutoplayToggle />
             <CompanySkins />
           </div>
         </aside>
@@ -718,7 +730,9 @@ export default function App() {
       <ThemeProvider>
         <TokensProvider>
           <SkinProvider>
-            <AppInner />
+            <AutoplayProvider>
+              <AppInner />
+            </AutoplayProvider>
           </SkinProvider>
         </TokensProvider>
       </ThemeProvider>

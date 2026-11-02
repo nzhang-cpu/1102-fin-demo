@@ -30,6 +30,18 @@ import { useTheme } from "../ThemeContext";
 import content from "../content";
 import { FinComposer } from "./host/FinComposer";
 import { FinCitedText, FinThinking } from "./host/FinCitation";
+import { PetInfoCard, type PetType } from "./host/PetInfoCard";
+import { ArticleSkeleton } from "./host/ArticleSkeleton";
+import { useAutoplay } from "../AutoplayContext";
+import { gate, useStoryWaiting } from "../storyGate";
+import {
+  DOG_TRAVEL_TITLE,
+  PET_CARD_INTRO,
+  PET_FINAL_REPLY,
+  PET_POLICY_REPLY,
+  PET_TRAVEL_TITLE,
+  isPetTravelQuery,
+} from "../content/petStory";
 
 function HelpChatBotAvatar({
   size = 36,
@@ -143,6 +155,8 @@ interface RuntimeMessage {
   content: string;
   citations?: string[];
   card?: ChatCard;
+  /** Story-only message bodies rendered under the text. */
+  kind?: "pet-card";
   timestamp: Date;
 }
 
@@ -272,7 +286,12 @@ export function ChatScreen({
   const chatUserBubble = dt.colors.host.chatUserBubble;
   const chatAgentBubble = dt.colors.host.chatAgentBubble;
   const chatAvatarBg = dt.colors.host.chatAvatarBg;
-  const scriptMessages = scriptOverride ?? tokens.chatScript.messages;
+  /** Pet-policy story: starts from the AI summary tiles on a pet search and plays itself. */
+  // Reached from a search summary tile, or by typing the question straight into the home search in
+  // fully conversational mode (which skips the results page).
+  const storyQuery = searchContext?.query ?? initialQuery ?? "";
+  const petStory = !!skin.host.agent && !instantAgent && !initialArticle && isPetTravelQuery(storyQuery);
+  const scriptMessages = petStory ? [] : scriptOverride ?? tokens.chatScript.messages;
 
   const articles: ArticleDetails[] = tokens.articles.learning;
 
@@ -337,6 +356,71 @@ export function ChatScreen({
   const lastArticleRef = useRef<ArticleDetails | null>(initialArticle ?? articles[0] ?? null);
   /** Once the viewer sends their own message, the scripted demo lines stop advancing. */
   const liveMode = liveMessages.length > 0;
+
+  // ---- pet-policy story ----
+  const [articleLoading, setArticleLoading] = useState(false);
+  const [storyDone, setStoryDone] = useState(false);
+  const [cardDue, setCardDue] = useState(false);
+  const { autoplay } = useAutoplay();
+  const storyWaiting = useStoryWaiting();
+  const startedRef = useRef(false);
+  const storyTimers = useRef<number[]>([]);
+  const later = (ms: number, fn: () => void) => {
+    storyTimers.current.push(window.setTimeout(fn, ms));
+  };
+  useEffect(() => () => storyTimers.current.forEach(clearTimeout), []);
+
+  const pushLive = (m: Omit<RuntimeMessage, "timestamp">) =>
+    setLiveMessages((cur) => (cur.some((x) => x.id === m.id) ? cur : [...cur, { citations: [], ...m, timestamp: new Date() }]));
+
+  /** The traveler is already signed in, so Fin goes straight to the answer. */
+  const startPetReply = () => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    setLiveThinking(true);
+    later(2100, () => {
+      setLiveThinking(false);
+      pushLive({ id: "story-reply", role: "agent", content: PET_POLICY_REPLY, citations: [PET_TRAVEL_TITLE] });
+      const policy = articles.find((a) => a.title === PET_TRAVEL_TITLE);
+      if (policy) {
+        lastArticleRef.current = policy;
+        setSelectedArticle(policy);
+      }
+      setCardDue(true);
+    });
+  };
+
+  const handlePetConfirm = (type: PetType) => {
+    setArticleLoading(true);
+    later(1700, () => {
+      const next = articles.find((a) => a.title === (type === "dog" ? DOG_TRAVEL_TITLE : PET_TRAVEL_TITLE));
+      if (next) setSelectedArticle(next);
+      setArticleLoading(false);
+    });
+  };
+
+  const handlePetComplete = () => {
+    pushLive({ id: "story-final", role: "agent", content: PET_FINAL_REPLY });
+    setStoryDone(true);
+  };
+
+  useEffect(() => {
+    if (!petStory) return;
+    pushLive({ id: "story-user", role: "user", content: storyQuery });
+    // with autoplay off, Fin waits for Space before answering
+    return gate(autoplay, 1400, startPetReply);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [petStory, autoplay]);
+
+  // the pet card follows the reply after a beat (or on Space)
+  useEffect(() => {
+    if (!cardDue) return;
+    return gate(autoplay, 1500, () =>
+      pushLive({ id: "story-card", role: "agent", content: PET_CARD_INTRO, kind: "pet-card" }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardDue, autoplay]);
+  const storyLocked = petStory && !storyDone;
 
   const visibleMessages = [...runtimeMessages.slice(0, visibleCount), ...liveMessages];
   const nextMessage = runtimeMessages[visibleCount] ?? null;
@@ -403,7 +487,7 @@ export function ChatScreen({
 
   const sendLive = (raw: string) => {
     const text = raw.trim();
-    if (!text || liveThinking || isThinking) return;
+    if (!text || liveThinking || isThinking || storyLocked) return;
     setPromptValue("");
     setDropdownOpen(false);
     const id = (kind: string) => `live-${kind}-${liveIdRef.current++}`;
@@ -524,7 +608,7 @@ export function ChatScreen({
                 </div>
               )}
 
-              {helpChat && skin.host.agent && (
+              {helpChat && skin.host.agent && !petStory && (
                 <div className="flex gap-[10px] items-start max-w-[88%] mb-[18px]">
                   <HelpChatBotAvatar bg={chatAvatarBg} letter={skin.host.agent?.label[0]} logo={skin.host.agent?.logo} />
                   <div className="flex flex-col items-start min-w-0">
@@ -659,6 +743,9 @@ export function ChatScreen({
                                 />
                               )}
                             </div>
+                          )}
+                          {message.kind === "pet-card" && finDone[message.id] && (
+                            <PetInfoCard onPetTypeConfirm={handlePetConfirm} onComplete={handlePetComplete} />
                           )}
                           {!skin.host.agent && message.citations && message.citations.length > 0 && (
                             <div className="mt-[8px]">
@@ -829,13 +916,23 @@ export function ChatScreen({
           >
             {helpChat ? (
               <>
+                {petStory && !autoplay && storyWaiting && (
+                  <div className="mb-[10px] flex justify-center">
+                    <span
+                      className="rounded-full border bg-white px-[12px] py-[5px] text-[12px] font-medium"
+                      style={{ borderColor: dt.colors.ui.borderLight, color: dt.colors.ui.muted }}
+                    >
+                      Press <kbd className="font-semibold text-black">Space</kbd> to continue
+                    </span>
+                  </div>
+                )}
                 <div className="relative w-full" ref={inputBarRef}>
                   {skin.host.agent ? (
                     <FinComposer
                       value={promptValue}
                       onChange={handlePromptChange}
                       onSend={() => sendLive(promptValue)}
-                      disabled={liveThinking || isThinking}
+                      disabled={liveThinking || isThinking || storyLocked}
                       onFocus={() => promptValue.trim() && setDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
                     />
@@ -861,7 +958,7 @@ export function ChatScreen({
                   )}
                 </div>
                 {showSuggestions && followUpNudges.length > 0 && (
-                  <div className="mt-[10px]">
+                  <div className={`mt-[10px] transition-opacity ${storyLocked ? "pointer-events-none opacity-50" : ""}`}>
                     <AiNudgeChips subtle nudges={followUpNudges} onNudge={handleFollowUpNudge} />
                   </div>
                 )}
@@ -908,7 +1005,7 @@ export function ChatScreen({
                 </div>
 
                 {showSuggestions && followUpNudges.length > 0 && (
-                  <div className="mt-[10px]">
+                  <div className={`mt-[10px] transition-opacity ${storyLocked ? "pointer-events-none opacity-50" : ""}`}>
                     <AiNudgeChips subtle nudges={followUpNudges} onNudge={handleFollowUpNudge} />
                   </div>
                 )}
@@ -920,7 +1017,7 @@ export function ChatScreen({
 
       {/* Prompt dropdown — fixed to escape overflow:hidden parents */}
       <AnimatePresence>
-        {showSuggestions && dropdownOpen && dropdownPos && (
+        {showSuggestions && !skin.host.agent && dropdownOpen && dropdownPos && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -974,9 +1071,9 @@ export function ChatScreen({
       </AnimatePresence>
 
       <AnimatePresence mode="popLayout">
-        {(selectedArticle || selectedLearner) && (
+        {(selectedArticle || selectedLearner || articleLoading) && (
           <motion.div
-            key={selectedLearner ?? selectedArticle?.title}
+            key={selectedLearner ?? (petStory ? "pet-panel" : selectedArticle?.title)}
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
@@ -989,10 +1086,13 @@ export function ChatScreen({
                   studentName={selectedLearner}
                   onClose={() => setSelectedLearner(null)}
                 />
+              ) : articleLoading ? (
+                <ArticleSkeleton />
               ) : (
                 <ArticlePanel
                   article={selectedArticle}
                   onClose={() => setSelectedArticle(null)}
+                  hideClose={!!skin.host.agent}
                   compact
                   onOpenArticle={setSelectedArticle}
                   showAiAssist

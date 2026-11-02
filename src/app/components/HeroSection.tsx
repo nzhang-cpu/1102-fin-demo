@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { SearchBar } from "./SearchBar";
 import { UnitedHelpHome } from "./host/UnitedHelpHome";
+import { UnitedFuturisticHome } from "./host/UnitedFuturisticHome";
 import { SearchFirstPromptBar } from "./SearchFirstPromptBar";
 import { CategoryButtons } from "./CategoryButtons";
 import { ContactCenterBotFab, ContactCenterTopicTree } from "./ContactCenterExtras";
@@ -116,6 +117,17 @@ export function HeroSection({
     const cats = tokens.categories ?? [];
     return cats.length > 0 ? cats.map((c) => c.label) : [];
   }, [tokens.categories]);
+
+  if (skin.layout.home === "united-futuristic") {
+    return (
+      <UnitedFuturisticHome
+        onSearch={onSearch}
+        variant={helpMirrorVariant}
+        showSuggestions={showSuggestions}
+        showEscalation={showEscalation}
+      />
+    );
+  }
 
   if (skin.layout.home === "united-help") {
     return (

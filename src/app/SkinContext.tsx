@@ -4,7 +4,7 @@ import { useDesignTokens } from "./DesignTokensContext";
 import { COMPANY_SKINS, getSkin, type CompanySkin, type CompanySkinId } from "./skins";
 
 /** Skin the demo opens on. */
-const DEFAULT_SKIN_ID: CompanySkinId = "united";
+const DEFAULT_SKIN_ID: CompanySkinId = "united-futuristic";
 const SKIN_STORAGE_KEY = "demo_company_skin";
 
 interface SkinContextValue {

@@ -16,6 +16,8 @@ interface FinAiSummaryProps {
   /** Optional detail copy; {{n}} markers become citation badges for sources[n - 1]. */
   body?: string;
   sources?: SummarySource[];
+  /** Suggested follow-up tiles shown under the summary; clicking one sends it to Fin. */
+  suggestions?: string[];
   /** Sends a question to Fin; omit to hide the chat box. */
   onAsk?: (query: string) => void;
   showFeedback?: boolean;
@@ -29,7 +31,7 @@ function splitHighlight(s: string): [string, string, string] {
   return ["", hl, s.slice(hl.length)];
 }
 
-export function FinAiSummary({ lead, body, sources = [], onAsk, showFeedback = false }: FinAiSummaryProps) {
+export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk, showFeedback = false }: FinAiSummaryProps) {
   const { dt } = useDesignTokens();
   const host = dt.colors.host;
   const ui = dt.colors.ui;
@@ -142,6 +144,21 @@ export function FinAiSummary({ lead, body, sources = [], onAsk, showFeedback = f
               </button>
             </div>
           </div>
+          {suggestions.length > 0 && (
+          <div className="mt-[12px] flex flex-wrap gap-[8px]">
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onAsk(s)}
+                className="rounded-full border bg-white px-[14px] py-[8px] text-[13px] font-medium transition-colors hover:border-current"
+                style={{ borderColor: ui.borderLight, color: host.link }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
         </div>
       )}
 

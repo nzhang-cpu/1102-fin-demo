@@ -15,6 +15,7 @@ import { useTokens } from "../../TokensContext";
 import { type SortOption } from "../SearchResultsControls";
 import { AiSummaryFeedback } from "../AiAssistCard";
 import { FinAiSummary } from "./FinAiSummary";
+import { isPetTravelQuery, PET_SUGGESTIONS } from "../../content/petStory";
 import { HostBreadcrumb } from "./HostBreadcrumb";
 import { buildSmartSummary } from "../SmartSummaryBlock";
 import type { SearchBridgeContext } from "../SearchResultsScreen";
@@ -243,6 +244,7 @@ export function HostSearchResults({
             lead={summaryPlain}
             body={smartSummary.detail.replace(/\n\n/g, " ")}
             sources={summarySources}
+            suggestions={isPetTravelQuery(query) ? PET_SUGGESTIONS : undefined}
             onAsk={onStartConversation ? (q) => submitAsk(q) : undefined}
             showFeedback={showSummaryFeedback}
           />

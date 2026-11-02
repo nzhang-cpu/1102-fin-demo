@@ -30,7 +30,7 @@ export function UnitedFooter() {
         </div>
       </div>
 
-      <div className="bg-[#EDEDED] text-[12px] font-semibold" style={{ color: BLUE }}>
+      <div className="bg-[#141414] border-y border-white/10 text-[12px] font-semibold text-white/90">
         <div className="max-w-[1000px] mx-auto px-[24px] py-[12px] flex flex-wrap items-center gap-x-[22px] gap-y-[6px]">
           {["About United", "Products and services", "Popular destinations"].map((l) => (
             <span key={l} className="inline-flex items-center gap-[3px]">

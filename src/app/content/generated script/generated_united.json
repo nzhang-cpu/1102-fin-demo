@@ -1,7 +1,7 @@
 {
   "hero": {
     "welcomeHeading": "Welcome back, Jordan.",
-    "welcomeSubtext": "Your Chicago–San Francisco trip is coming up — check-in opens 24 hours before departure.",
+    "welcomeSubtext": "Your Chicago–Paris trip is coming up — check-in opens 24 hours before departure.",
     "userName": "Jordan"
   },
   "searchHero": {
@@ -55,7 +55,7 @@
     "relatedObjects": [
       {
         "type": "Trip",
-        "title": "ORD → SFO · Confirmed",
+        "title": "ORD → CDG · Confirmed",
         "subtitle": "Departs tomorrow · Check-in opens soon",
         "details": "Roundtrip reservation with seats selected. Manage seats, bags, and upgrades from My trips."
       },
@@ -339,6 +339,22 @@
         "lastUpdated": "Sep 2026",
         "summary": "Request airport assistance and accessible seating ahead of travel so United can prepare for your trip.",
         "content": "Accessibility and special assistance\n\nUnited can support a range of accessibility needs.\n\nWhat to do first\nAdd assistance requests when you book or in Manage reservation before departure day.\n\nAirport arrival\nAllow extra time for assistance at check-in, security and boarding.\n\nWhen to escalate\nTo discuss medical seating or service animal documentation, contact Accessibility Services before you fly."
+      },
+      {
+        "title": "Pet Travel Policy - International Flights",
+        "subtitle": "Complete guide for traveling internationally with pets on United.",
+        "category": "Traveling with pets",
+        "lastUpdated": "Nov 2025",
+        "summary": "You can bring your pet on an international flight as long as it meets our weight and vaccination criteria. In-cabin and cargo travel have crate requirements, and you will need a valid health certificate issued within 10 days of departure.",
+        "content": "Pet Travel Policy - International Flights\n\nEffective January 1, 2025. Applies to all international flights.\n\nTraveling internationally can be an exciting adventure, and for many pet owners, leaving their companions behind is out of the question. United offers an international pet travel policy designed to support a safe and comfortable journey.\n\nPlanning Ahead: Your First Steps\nContact the dedicated pet travel desk as soon as dates are confirmed. Availability is limited, destination requirements vary, and the pet reservation must be associated with the passenger booking.\n\nIn-Cabin Travel: Small Pets Welcome\nSmall dogs and cats may travel in an approved, ventilated, escape-proof carrier that fits under the seat. The animal must be able to stand and turn around naturally.\n\nChecked Baggage: Larger Companions\nLarger pets may travel in the climate-controlled cargo hold. Kennels must meet IATA requirements for size, construction, and ventilation.\n\nVeterinary Health Certificate\nIssued by a licensed veterinarian and completed within the destination's required travel window.\n\nRabies Vaccination Certificate\nProof of a current rabies vaccination is required for most international destinations.\n\nOther Vaccinations\nAdditional vaccinations may be required by the destination country.\n\nImport Permits\nSome countries require an import permit obtained before travel.\n\nMicrochip\nMost countries require an ISO-compliant identification microchip.\n\nPolicy reference\nUnited pet travel specialists can explain destination requirements, but the pet owner is responsible for ensuring that all documentation is complete."
+      },
+      {
+        "title": "Bring a Dog on International Flights",
+        "subtitle": "Complete guide for traveling internationally with your dog on United.",
+        "category": "Traveling with pets",
+        "lastUpdated": "Nov 2025",
+        "summary": "Dogs must be at least 8 weeks old, travel in an approved crate and have a current rabies vaccination. The pet fee is $125 each way in the cabin or $200 in the cargo hold.",
+        "content": "Bring a Dog on International Flights\n\nEffective January 1, 2025. Applies to all international flights with dogs.\n\nDogs must be at least 8 weeks old and fully weaned.\n\nApproved hard-sided or soft-sided crate (41 in x 24 in x 28 in).\n\nMaximum combined weight (dog + carrier) of 20 lbs for in-cabin travel.\n\nValid health certificate issued within 10 days of departure.\n\nCurrent rabies vaccination required (administered at least 21 days before travel).\n\nAdditional vaccinations: Distemper, Parvovirus, and Bordetella.\n\nDog must remain in carrier throughout the flight.\n\nPet fee of $125 each way for in-cabin, $200 for cargo hold.\n\nCountry-specific requirements may apply.\n\nMicrochip identification recommended for international travel.\n\nPolicy reference\nPet Policy DOG-INT-2025"
       }
     ]
   },

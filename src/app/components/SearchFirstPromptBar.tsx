@@ -20,13 +20,21 @@ interface SearchFirstPromptBarProps {
   /** Prefill the input (e.g. results page). */
   initialQuery?: string;
   showSuggestions?: boolean;
+  /** Demo helper: types this text into the empty box the first time it is focused. */
+  autoTypeText?: string;
+  /** Drops the built-in side gutter so the bar fills whatever card it sits in. */
+  flush?: boolean;
 }
 
 export function SearchFirstPromptBar({
   onSearch,
   initialQuery = "",
-  showSuggestions = true,
+  showSuggestions: showSuggestionsProp = true,
+  autoTypeText,
+  flush = false,
 }: SearchFirstPromptBarProps) {
+  /** The auto-typed demo keeps the box clean: no dropdown under the text. */
+  const showSuggestions = showSuggestionsProp && !autoTypeText;
   const { tokens } = useTokens();
   const t = tokens.searchBar;
   const { theme } = useTheme();
@@ -61,7 +69,27 @@ export function SearchFirstPromptBar({
     }
   }, [searchQuery, onSearch]);
 
+  const autoTypedRef = useRef(false);
+  const autoTypeTimer = useRef<number | null>(null);
+  const stopAutoType = () => {
+    if (autoTypeTimer.current) window.clearInterval(autoTypeTimer.current);
+    autoTypeTimer.current = null;
+  };
+  useEffect(() => stopAutoType, []);
+
+  const startAutoType = () => {
+    if (!autoTypeText || autoTypedRef.current || searchQuery) return;
+    autoTypedRef.current = true;
+    let i = 0;
+    autoTypeTimer.current = window.setInterval(() => {
+      i += 1;
+      setSearchQuery(autoTypeText.slice(0, i));
+      if (i >= autoTypeText.length) stopAutoType();
+    }, 85);
+  };
+
   const handleFocus = () => {
+    startAutoType();
     leavingRef.current = false;
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     setIsOpen(true);
@@ -95,7 +123,7 @@ export function SearchFirstPromptBar({
 
   const { skin } = useSkin();
   /** United help home sits the bar directly on a solid blue card, so the pill frame is clear. */
-  const clearFrame = skin.layout.home === "united-help";
+  const clearFrame = skin.layout.home === "united-help" || skin.layout.home === "united-futuristic";
   const GLOW = clearFrame ? "none" : dt.shadows.searchGlow;
 
   // Closed radii are half the bar's height (72px outer, 64px inner), not 100px, so the
@@ -107,7 +135,7 @@ export function SearchFirstPromptBar({
   const DUR = "240ms";
 
   return (
-    <div className="w-full max-w-[896px] mx-auto px-[40px]">
+    <div className={flush ? "w-full" : "w-full max-w-[896px] mx-auto px-[40px]"}>
       <div>
         <motion.div
           ref={containerRef}
@@ -161,6 +189,7 @@ export function SearchFirstPromptBar({
                   rows={1}
                   value={searchQuery}
                   onChange={(e) => {
+                    stopAutoType();
                     setSearchQuery(e.target.value);
                     autoResize();
                   }}

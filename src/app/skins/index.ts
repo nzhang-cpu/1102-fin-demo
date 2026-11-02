@@ -9,10 +9,10 @@ import finLogo from "../assets/logos/fin-white.png";
 import unitedLogo from "../assets/logos/united.svg";
 import unitedGenerated from "../content/generated script/generated_united.json";
 
-export type CompanySkinId = "default" | "disney-plus" | "southwest" | "united";
+export type CompanySkinId = "default" | "disney-plus" | "southwest" | "united" | "united-futuristic";
 
 export type HostShellKind = "none" | "help-center";
-export type HomeLayout = "centered-hero" | "help-mirror" | "help-pathway" | "united-help";
+export type HomeLayout = "centered-hero" | "help-mirror" | "help-pathway" | "united-help" | "united-futuristic";
 export type ArticleLayout = "panel" | "help-article";
 export type ChatLayout = "default" | "help-chat";
 
@@ -398,6 +398,34 @@ export const COMPANY_SKINS: CompanySkin[] = [
     },
   },
 ];
+
+/** UA Futuristic: same United content and Fin, with an aurora-glass home page. */
+export function buildUnitedFuturisticDesignTokens(): DesignTokens {
+  const dt = buildUnitedDesignTokens();
+  dt.colors.host.pageBg = "#F4F6FF";
+  dt.colors.host.chatAgentBubble = "#EEF1FF";
+  dt.gradients.pageBackground = "#F4F6FF";
+  dt.themes.skyPeriwinkle = {
+    id: "united-futuristic",
+    label: "UA Futuristic",
+    gradient: "linear-gradient(135deg, #1414D2 0%, #6B5BFF 55%, #22D3EE 100%)",
+    swatchA: "#1414D2",
+    swatchB: "#22D3EE",
+    textColor: "#000000",
+  };
+  return dt;
+}
+
+const UNITED_SKIN = COMPANY_SKINS.find((k) => k.id === "united")!;
+COMPANY_SKINS.push({
+  ...UNITED_SKIN,
+  id: "united-futuristic",
+  label: "UA Futuristic",
+  hint: "Aurora glass home + Fin",
+  designTokens: buildUnitedFuturisticDesignTokens(),
+  host: { ...UNITED_SKIN.host },
+  layout: { ...UNITED_SKIN.layout, home: "united-futuristic" },
+});
 
 export function getSkin(id: CompanySkinId): CompanySkin {
   return COMPANY_SKINS.find((s) => s.id === id) ?? COMPANY_SKINS[0];

@@ -79,7 +79,7 @@ function HelpArticleLayout({
       ? suggested
       : catalog.filter((a) => a.title !== article.title).slice(0, 5);
 
-  const blocks = article.content.split("\n\n").filter(Boolean);
+  const blocks = article.content.split("\n\n").filter(Boolean).filter((b, i) => !(i === 0 && b.trim() === article.title.trim()));
   const optionBlocks = blocks.filter(
     (b) =>
       b.startsWith("How do I ") ||
@@ -261,7 +261,7 @@ function HelpArticleLayout({
           )}
         </div>
         </div>
-        {finStyle && <UnitedFooter />}
+        {finStyle && !compact && <UnitedFooter />}
       </div>
     </div>
   );
