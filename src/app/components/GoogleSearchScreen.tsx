@@ -1,3 +1,4 @@
+import googleLogo from "../assets/logos/google.png";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Search, Mic, Camera, MoreVertical } from "lucide-react";
@@ -9,35 +10,7 @@ interface GoogleSearchScreenProps {
 }
 
 function GoogleMark({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 74 24" aria-label="Google" role="img">
-      <path
-        fill="#4285F4"
-        d="M9.24 8.19v2.46h5.88c-.18 1.38-.64 2.39-1.34 3.1-.86.86-2.2 1.8-4.54 1.8-3.62 0-6.45-2.92-6.45-6.54s2.83-6.54 6.45-6.54c1.95 0 3.38.77 4.43 1.76L15.4 2.5C13.94 1.14 11.98.2 9.24.2 4.28.2.11 4.41.11 9.36s4.17 9.16 9.13 9.16c2.68 0 4.7-.89 6.28-2.52 1.62-1.62 2.13-3.91 2.13-5.75 0-.57-.04-1.1-.13-1.57H9.24z"
-      />
-      <path
-        fill="#EA4335"
-        d="M25 6.19c-3.21 0-5.83 2.44-5.83 5.82 0 3.34 2.62 5.82 5.83 5.82 3.21 0 5.83-2.48 5.83-5.82 0-3.38-2.62-5.82-5.83-5.82zm0 9.33c-1.85 0-3.22-1.5-3.22-3.51 0-2.05 1.37-3.51 3.22-3.51s3.22 1.46 3.22 3.51c0 2.01-1.37 3.51-3.22 3.51z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M53.58 7.49h-.14c-.55-.66-1.6-1.3-2.92-1.3-2.78 0-5.26 2.48-5.26 5.82 0 3.3 2.48 5.82 5.26 5.82 1.32 0 2.38-.64 2.92-1.34h.14v.81c0 2.22-1.19 3.41-3.1 3.41-1.56 0-2.52-1.12-2.91-2.07l-2.27.94c.64 1.54 2.33 3.43 5.22 3.43 3.03 0 5.6-1.79 5.6-6.15V6.55h-2.54v.94zm-2.72 8.03c-1.85 0-3.19-1.52-3.19-3.51 0-2.01 1.34-3.51 3.19-3.51 1.82 0 3.19 1.54 3.19 3.51 0 1.99-1.37 3.51-3.19 3.51z"
-      />
-      <path fill="#4285F4" d="M38 2.24v16.82h2.54V2.24z" />
-      <path
-        fill="#34A853"
-        d="M64.78 17.65l2.03 1.35c-1.27 1.88-4.34 3.22-6.91 3.22-4.69 0-8.19-3.21-8.19-7.82 0-4.65 3.54-7.82 7.86-7.82 4.36 0 6.59 3.46 6.59 7.27v1.03h-11.04c.32 1.84 1.92 3.02 3.98 3.02 1.71 0 2.92-.85 3.68-2.25zm-8.42-4.33h8.42c-.09-2.04-1.54-3.56-3.59-3.56-2.18 0-3.71 1.52-4.83 3.56z"
-      />
-      <path
-        fill="#EA4335"
-        d="M59.65 3.56l-2.27 1.7c.64.48 1.54.91 2.7.91 1.32 0 2.52-.64 3.19-1.64l-2.27-1.7c-.41.41-.96.73-1.35.73z"
-      />
-      <path
-        fill="#EA4335"
-        d="M41.93 17.83h2.54V6.55h-2.54v11.28zm1.27-12.91c.81 0 1.47-.66 1.47-1.47s-.66-1.47-1.47-1.47-1.47.66-1.47 1.47.66 1.47 1.47 1.47z"
-      />
-    </svg>
-  );
+  return <img src={googleLogo} alt="Google" className={className} />;
 }
 
 function resultUrl(brandSlug: string, title: string) {
@@ -91,7 +64,7 @@ export function GoogleSearchScreen({ onSelectArticle }: GoogleSearchScreenProps)
       {/* SERP header */}
       <div className="sticky top-0 z-10 bg-white border-b border-[#ebebeb]">
         <div className="flex items-center gap-[28px] px-[24px] pt-[18px] pb-[12px] max-w-[1100px]">
-          <GoogleMark className="h-[30px] w-[92px] shrink-0" />
+          <GoogleMark className="h-[30px] w-auto shrink-0" />
           <div className="flex-1 max-w-[690px] flex items-center gap-[12px] h-[44px] px-[16px] rounded-full border border-[#dfe1e5] shadow-[0_1px_6px_rgba(32,33,36,0.18)] bg-white">
             <input
               value={query}
