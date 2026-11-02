@@ -294,7 +294,7 @@ export function HostSearchResults({
               <div className="flex items-start justify-between gap-[12px] flex-wrap">
                 <p className="text-[12px] leading-[16px] flex-1 min-w-[180px]" style={{ color: ui.muted }}>
                   {compactSummary
-                    ? "AI-generated. Avoid sharing personal information."
+                    ? "Summarized by AI, so it may occasionally be wrong. Please don’t share payment or ID numbers."
                     : "Responses generated with the assistance of AI technology, avoid sharing personal information. For the most accurate and complete information, please check source links."}
                 </p>
                 {showSummaryFeedback && <AiSummaryFeedback />}

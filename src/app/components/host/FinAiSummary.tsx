@@ -68,7 +68,7 @@ export function FinAiSummary({ children, onAsk, showFeedback = false }: FinAiSum
         )}
         <div className="flex items-start justify-between gap-[12px] flex-wrap">
           <p className="text-[12px] leading-[16px] flex-1 min-w-[180px]" style={{ color: ui.muted }}>
-            AI-generated. Avoid sharing personal information.
+            Summarized by AI, so it may occasionally be wrong. Please don’t share payment or ID numbers.
           </p>
           {showFeedback && <AiSummaryFeedback />}
         </div>
