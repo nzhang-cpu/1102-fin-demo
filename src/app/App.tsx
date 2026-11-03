@@ -30,7 +30,8 @@ import {
 } from "@/app/components/FeatureChecklist";
 import { CompanySkins } from "@/app/components/CompanySkins";
 import { AutoplayToggle } from "@/app/components/AutoplayToggle";
-import { AutoplayProvider } from "@/app/AutoplayContext";
+import { AutoplayProvider, useAutoplay } from "@/app/AutoplayContext";
+import { getInitialSettings, saveSharedSettings } from "@/app/sharedSettings";
 import { STORY_ADVANCE, hasPendingGate } from "@/app/storyGate";
 import { HostShell } from "@/app/components/host/HostShell";
 import { SkinProvider, useSkin } from "@/app/SkinContext";
@@ -46,8 +47,16 @@ function AppInner() {
   const { dt } = useDesignTokens();
   const { skin } = useSkin();
 
-  const [maturity, setMaturity] = useState<MaturityMode>("search-enhanced");
-  const [features, setFeatures] = useState<FeatureFlags>(() => defaultFlagsForMode("search-enhanced"));
+  const [maturity, setMaturity] = useState<MaturityMode>(() => {
+    const m = getInitialSettings()?.maturity;
+    return m === "current" || m === "search-enhanced" || m === "conversational" ? m : "search-enhanced";
+  });
+  const [features, setFeatures] = useState<FeatureFlags>(() => {
+    const shared = getInitialSettings();
+    const m = shared?.maturity;
+    const mode: MaturityMode = m === "current" || m === "conversational" ? m : "search-enhanced";
+    return { ...defaultFlagsForMode(mode), ...(shared?.features ?? {}) };
+  });
   const [entrance, setEntrance] = useState<EntranceTab>("homepage");
   const [homepageView, setHomepageView] = useState<HomepageView>("home");
   const [googleView, setGoogleView] = useState<GoogleView>("serp");
@@ -61,8 +70,21 @@ function AppInner() {
   const [navSearch, setNavSearch] = useState("");
   const [activeArticle, setActiveArticle] = useState<ArticleDetails | null>(null);
   const [instantAgent, setInstantAgent] = useState(false);
-  const [articleLayout, setArticleLayout] = useState<ArticleLayoutVariant>("inline");
+  const [articleLayout, setArticleLayout] = useState<ArticleLayoutVariant>(() =>
+    getInitialSettings()?.articleLayout === "ai-zone" ? "ai-zone" : "inline",
+  );
   const [controlsOpen, setControlsOpen] = useState(false);
+  const { autoplay } = useAutoplay();
+
+  // Everything changed in the demo panel is saved for the next visitor (skipping the initial load).
+  const settingsReady = useRef(false);
+  useEffect(() => {
+    if (!settingsReady.current) {
+      settingsReady.current = true;
+      return;
+    }
+    saveSharedSettings({ skin: skin.id, maturity, autoplay, articleLayout, features });
+  }, [skin.id, maturity, autoplay, articleLayout, features]);
 
   // Demo controls are hidden until the user presses K (Esc also closes them).
   useEffect(() => {

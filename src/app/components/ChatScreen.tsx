@@ -608,7 +608,9 @@ export function ChatScreen({
                 </div>
               )}
 
-              {helpChat && skin.host.agent && !petStory && (
+              {/* The welcome only greets people who opened the agent with no question yet (floating button / expand);
+              a search that already carries a question starts straight on that question. */}
+              {helpChat && skin.host.agent && instantAgent && !petStory && (
                 <div className="flex gap-[10px] items-start max-w-[88%] mb-[18px]">
                   <HelpChatBotAvatar bg={chatAvatarBg} letter={skin.host.agent?.label[0]} logo={skin.host.agent?.logo} />
                   <div className="flex flex-col items-start min-w-0">
