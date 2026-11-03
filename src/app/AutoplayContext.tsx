@@ -7,14 +7,15 @@ interface AutoplayValue {
   setAutoplay: (on: boolean) => void;
 }
 
-const AutoplayContext = createContext<AutoplayValue>({ autoplay: true, setAutoplay: () => {} });
+const AutoplayContext = createContext<AutoplayValue>({ autoplay: false, setAutoplay: () => {} });
 
 export function AutoplayProvider({ children }: { children: ReactNode }) {
   const [autoplay, setState] = useState(() => {
+    // Off by default: the story waits for Space or a click on the widget until it is switched on.
     try {
-      return localStorage.getItem(KEY) !== "off";
+      return localStorage.getItem(KEY) === "on";
     } catch {
-      return true;
+      return false;
     }
   });
   const setAutoplay = useCallback((on: boolean) => {

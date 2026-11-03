@@ -117,17 +117,8 @@ export function UnitedFuturisticHome({ onSearch, variant, showSuggestions = true
       {/* at least one screen tall, so the footer starts below the fold */}
       <div className="relative min-h-full flex flex-col justify-center">
       <div className="relative w-full max-w-[720px] mx-auto px-[24px] pt-[64px]">
-        <div className="flex items-center justify-center gap-[8px]">
-          <span className={`inline-flex items-center gap-[8px] rounded-full px-[12px] py-[6px] text-[12px] font-semibold ${glass}`}>
-            <span className="relative flex size-[8px]">
-              <span className="absolute inline-flex size-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
-              <span className="relative inline-flex size-[8px] rounded-full bg-emerald-500" />
-            </span>
-            Fin is online
-          </span>
-        </div>
 
-        <h1 className="mt-[24px] text-center text-balance text-[40px] sm:text-[44px] font-bold leading-[1.15] tracking-[-0.025em]">
+        <h1 className="text-center text-balance text-[40px] sm:text-[44px] font-bold leading-[1.15] tracking-[-0.025em]">
           Hi {name}, your trip to{" "}
           <span className="bg-clip-text text-transparent" style={{ backgroundImage: GRADIENT }}>
             Paris is on schedule for tomorrow.
