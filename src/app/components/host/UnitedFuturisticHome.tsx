@@ -65,52 +65,46 @@ function HelpCarousel({ items, onPick }: { items: { label: string; query: string
   );
 }
 
-interface MenuGroup {
-  title: string;
-  prompts: string[];
-}
-
-/** Quick-start menus: each chip opens grouped prompts that send the chosen question. */
-const QUICK_MENUS: { label: string; groups: MenuGroup[] }[] = [
+/** Quick-start menus: each chip opens five prompts that send the chosen question. */
+const QUICK_MENUS: { label: string; prompts: string[] }[] = [
   {
     label: "Check in",
-    groups: [
-      {
-        title: "Before you go",
-        prompts: ["How do I check in for my flight?", "When does check-in open?", "Can I check in at the airport?"],
-      },
-      {
-        title: "Boarding pass",
-        prompts: ["Where do I find my boarding pass?", "How do I add my boarding pass to my phone wallet?"],
-      },
+    prompts: [
+      "How do I check in for my flight?",
+      "When does check-in open?",
+      "Can I check in at the airport?",
+      "Where do I find my boarding pass?",
+      "How do I add my boarding pass to my phone wallet?",
     ],
   },
   {
     label: "Baggage allowance",
-    groups: [
-      { title: "Carry-on", prompts: ["What is my carry-on allowance?", "Can I bring a personal item?"] },
-      { title: "Checked bags", prompts: ["How many bags can I check?", "What are the checked bag fees?"] },
-      {
-        title: "Special items",
-        prompts: ["Can I bring my pet on my trip to Paris?", "Can I bring sports equipment?"],
-      },
+    prompts: [
+      "What is my carry-on allowance?",
+      "How many bags can I check?",
+      "What are the checked bag fees?",
+      "Can I bring my pet on my trip to Paris?",
+      "Can I bring sports equipment?",
     ],
   },
   {
     label: "Change or cancel",
-    groups: [
-      { title: "Change", prompts: ["How do I change my flight?", "Can I change my seat after booking?"] },
-      { title: "Cancel", prompts: ["How do I cancel my flight?", "Will I get a refund or a credit?"] },
+    prompts: [
+      "How do I change my flight?",
+      "How do I cancel my flight?",
+      "Can I change my seat after booking?",
+      "Will I get a refund or a credit?",
+      "Can I switch to an earlier flight today?",
     ],
   },
   {
     label: "Refunds and credits",
-    groups: [
-      { title: "Refunds", prompts: ["How do I request a refund?", "How long do refunds take?"] },
-      {
-        title: "Future flight credits",
-        prompts: ["How do I use a future flight credit?", "Where can I see my travel credits?"],
-      },
+    prompts: [
+      "How do I request a refund?",
+      "How long do refunds take?",
+      "How do I use a future flight credit?",
+      "Where can I see my travel credits?",
+      "Do my travel credits expire?",
     ],
   },
 ];
@@ -164,27 +158,20 @@ function QuickMenus({ onPick }: { onPick?: (query: string) => void }) {
                   transition={{ duration: 0.16, ease: "easeOut" }}
                   className="absolute left-1/2 top-full z-40 mt-[8px] w-[320px] -translate-x-1/2 rounded-[16px] border border-black/[0.06] bg-white p-[8px] text-left shadow-[0_16px_40px_rgba(20,20,210,0.16)]"
                 >
-                  {m.groups.map((g) => (
-                    <div key={g.title} className="pb-[4px]">
-                      <p className="px-[12px] pb-[4px] pt-[8px] text-[11px] font-semibold uppercase tracking-[0.08em] text-black/40">
-                        {g.title}
-                      </p>
-                      {g.prompts.map((q) => (
-                        <button
-                          key={q}
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            setOpen(null);
-                            onPick?.(q);
-                          }}
-                          className="group flex w-full items-center justify-between gap-[12px] rounded-[10px] px-[12px] py-[8px] text-left text-[14px] leading-[20px] hover:bg-black/[0.04] transition-colors"
-                        >
-                          <span>{q}</span>
-                          <ArrowUpRight className="size-[14px] shrink-0 text-black/0 group-hover:text-black/40 transition-colors" />
-                        </button>
-                      ))}
-                    </div>
+                  {m.prompts.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setOpen(null);
+                        onPick?.(q);
+                      }}
+                      className="group flex w-full items-center justify-between gap-[12px] rounded-[10px] px-[12px] py-[8px] text-left text-[14px] leading-[20px] hover:bg-black/[0.04] transition-colors"
+                    >
+                      <span>{q}</span>
+                      <ArrowUpRight className="size-[14px] shrink-0 text-black/0 group-hover:text-black/40 transition-colors" />
+                    </button>
                   ))}
                 </motion.div>
               )}
