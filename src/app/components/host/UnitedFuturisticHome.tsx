@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
-import { ArrowUpRight, Plane } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { ArrowUpRight, ChevronDown, Plane } from "lucide-react";
 import { SearchFirstPromptBar } from "../SearchFirstPromptBar";
 import { UnitedFooter } from "./UnitedFooter";
 import { useTokens } from "../../TokensContext";
@@ -65,7 +65,136 @@ function HelpCarousel({ items, onPick }: { items: { label: string; query: string
   );
 }
 
-const QUICK = ["Check in", "Baggage allowance", "Change or cancel", "Refunds and credits"];
+interface MenuGroup {
+  title: string;
+  prompts: string[];
+}
+
+/** Quick-start menus: each chip opens grouped prompts that send the chosen question. */
+const QUICK_MENUS: { label: string; groups: MenuGroup[] }[] = [
+  {
+    label: "Check in",
+    groups: [
+      {
+        title: "Before you go",
+        prompts: ["How do I check in for my flight?", "When does check-in open?", "Can I check in at the airport?"],
+      },
+      {
+        title: "Boarding pass",
+        prompts: ["Where do I find my boarding pass?", "How do I add my boarding pass to my phone wallet?"],
+      },
+    ],
+  },
+  {
+    label: "Baggage allowance",
+    groups: [
+      { title: "Carry-on", prompts: ["What is my carry-on allowance?", "Can I bring a personal item?"] },
+      { title: "Checked bags", prompts: ["How many bags can I check?", "What are the checked bag fees?"] },
+      {
+        title: "Special items",
+        prompts: ["Can I bring my pet on my trip to Paris?", "Can I bring sports equipment?"],
+      },
+    ],
+  },
+  {
+    label: "Change or cancel",
+    groups: [
+      { title: "Change", prompts: ["How do I change my flight?", "Can I change my seat after booking?"] },
+      { title: "Cancel", prompts: ["How do I cancel my flight?", "Will I get a refund or a credit?"] },
+    ],
+  },
+  {
+    label: "Refunds and credits",
+    groups: [
+      { title: "Refunds", prompts: ["How do I request a refund?", "How long do refunds take?"] },
+      {
+        title: "Future flight credits",
+        prompts: ["How do I use a future flight credit?", "Where can I see my travel credits?"],
+      },
+    ],
+  },
+];
+
+/** Chip row with one open dropdown at a time; closes on outside click, Esc or selection. */
+function QuickMenus({ onPick }: { onPick?: (query: string) => void }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open === null) return;
+    const onDown = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(null);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="mt-[12px] flex flex-wrap items-center justify-center gap-[8px]">
+      {QUICK_MENUS.map((m, i) => {
+        const on = open === i;
+        return (
+          <div key={m.label} className="relative">
+            <button
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={on}
+              onClick={() => setOpen(on ? null : i)}
+              className={`inline-flex items-center gap-[6px] rounded-full border px-[12px] py-[6px] text-[13px] font-medium transition-all ${
+                on
+                  ? "border-[#1414D2]/40 bg-white shadow-[0_4px_14px_rgba(20,20,210,0.14)]"
+                  : "border-white/80 bg-white/70 hover:bg-white hover:shadow-[0_4px_14px_rgba(20,20,210,0.14)]"
+              }`}
+            >
+              {m.label}
+              <ChevronDown className={`size-[13px] text-black/45 transition-transform ${on ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence>
+              {on && (
+                <motion.div
+                  role="menu"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.16, ease: "easeOut" }}
+                  className="absolute left-1/2 top-full z-40 mt-[8px] w-[320px] -translate-x-1/2 rounded-[16px] border border-black/[0.06] bg-white p-[8px] text-left shadow-[0_16px_40px_rgba(20,20,210,0.16)]"
+                >
+                  {m.groups.map((g) => (
+                    <div key={g.title} className="pb-[4px]">
+                      <p className="px-[12px] pb-[4px] pt-[8px] text-[11px] font-semibold uppercase tracking-[0.08em] text-black/40">
+                        {g.title}
+                      </p>
+                      {g.prompts.map((q) => (
+                        <button
+                          key={q}
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setOpen(null);
+                            onPick?.(q);
+                          }}
+                          className="group flex w-full items-center justify-between gap-[12px] rounded-[10px] px-[12px] py-[8px] text-left text-[14px] leading-[20px] hover:bg-black/[0.04] transition-colors"
+                        >
+                          <span>{q}</span>
+                          <ArrowUpRight className="size-[14px] shrink-0 text-black/0 group-hover:text-black/40 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 const glass =
   "bg-white/65 backdrop-blur-xl border border-white/70 shadow-[0_10px_40px_rgba(20,20,210,0.10)]";
@@ -129,7 +258,7 @@ export function UnitedFuturisticHome({ onSearch, variant, showSuggestions = true
           <HelpCarousel items={HELP_TOPICS} onPick={onSearch} />
         </p>
 
-        <div className={`mt-[32px] rounded-[24px] p-[12px] ${glass}`}>
+        <div className={`relative z-20 mt-[32px] rounded-[24px] p-[12px] ${glass}`}>
           {variant === "mirror" ? (
             <button
               type="button"
@@ -142,18 +271,7 @@ export function UnitedFuturisticHome({ onSearch, variant, showSuggestions = true
             // search-enhanced and fully conversational share this bar; conversational just skips results
             <SearchFirstPromptBar onSearch={onSearch} showSuggestions={showSuggestions} autoTypeText="pet policy" flush />
           )}
-          <div className="mt-[12px] flex flex-wrap items-center justify-center gap-[8px]">
-            {QUICK.map((q) => (
-              <button
-                key={q}
-                type="button"
-                onClick={() => onSearch?.(q)}
-                className="rounded-full border border-white/80 bg-white/70 px-[12px] py-[6px] text-[13px] font-medium hover:bg-white hover:shadow-[0_4px_14px_rgba(20,20,210,0.14)] transition-all"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
+          <QuickMenus onPick={onSearch} />
         </div>
 
         {/* trip widget: kept quiet so it does not compete with the search box */}
