@@ -268,7 +268,7 @@ export function UnitedFuturisticHome({ onSearch, variant, showSuggestions = true
           <button
             type="button"
             onClick={() => onSearch?.("Check in")}
-            className="inline-flex items-center gap-[6px] rounded-full px-[18px] py-[10px] text-[14px] font-semibold text-white hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-[6px] rounded-full px-[18px] py-[10px] text-[14px] font-semibold text-white hover:brightness-125 hover:shadow-[0_6px_16px_rgba(11,42,102,0.3)]"
             style={{ background: NAVY }}
           >
             Check in

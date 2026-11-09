@@ -31,6 +31,8 @@ import {
 import { CompanySkins } from "@/app/components/CompanySkins";
 import { AutoplayToggle } from "@/app/components/AutoplayToggle";
 import { AutoplayProvider, useAutoplay } from "@/app/AutoplayContext";
+import { PetFlowProvider, usePetFlow } from "@/app/PetFlowContext";
+import { PetFlowToggle } from "@/app/components/PetFlowToggle";
 import { getInitialSettings, saveSharedSettings } from "@/app/sharedSettings";
 import { STORY_ADVANCE, hasPendingGate } from "@/app/storyGate";
 import { HostShell } from "@/app/components/host/HostShell";
@@ -75,6 +77,7 @@ function AppInner() {
   );
   const [controlsOpen, setControlsOpen] = useState(false);
   const { autoplay } = useAutoplay();
+  const { petFlow } = usePetFlow();
 
   // Everything changed in the demo panel is saved for the next visitor (skipping the initial load).
   const settingsReady = useRef(false);
@@ -83,18 +86,22 @@ function AppInner() {
       settingsReady.current = true;
       return;
     }
-    saveSharedSettings({ skin: skin.id, maturity, autoplay, articleLayout, features });
-  }, [skin.id, maturity, autoplay, articleLayout, features]);
+    saveSharedSettings({ skin: skin.id, maturity, autoplay, articleLayout, features, petFlow });
+  }, [skin.id, maturity, autoplay, articleLayout, features, petFlow]);
 
   // Demo controls are hidden until the user presses K (Esc also closes them).
   useEffect(() => {
+    let swallowSpaceUp = false;
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.code === "Space" && hasPendingGate()) {
-        // autoplay is off and the story is waiting: Space moves it to the next beat
+        // autoplay is off and the story is waiting: Space moves it to the next beat. A button that
+        // still has focus (say a switch in this panel) must not also be activated by the same press.
         e.preventDefault();
+        swallowSpaceUp = true;
+        (document.activeElement as HTMLElement | null)?.blur?.();
         window.dispatchEvent(new Event(STORY_ADVANCE));
         return;
       }
@@ -105,8 +112,18 @@ function AppInner() {
         setControlsOpen(false);
       }
     };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space" && swallowSpaceUp) {
+        swallowSpaceUp = false;
+        e.preventDefault();
+      }
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKeyUp);
+    };
   }, []);
 
   const helpCenterHost = skin.host.shell === "help-center";
@@ -584,6 +601,7 @@ function AppInner() {
               onChange={handleFeatureChange}
             />
             <AutoplayToggle />
+            <PetFlowToggle />
             <CompanySkins />
           </div>
         </aside>
@@ -732,7 +750,9 @@ export default function App() {
         <TokensProvider>
           <SkinProvider>
             <AutoplayProvider>
-              <AppInner />
+              <PetFlowProvider>
+                <AppInner />
+              </PetFlowProvider>
             </AutoplayProvider>
           </SkinProvider>
         </TokensProvider>

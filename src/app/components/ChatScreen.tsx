@@ -34,6 +34,8 @@ import { PetInfoCard, type PetType } from "./host/PetInfoCard";
 import { ArticleSkeleton } from "./host/ArticleSkeleton";
 import { useAutoplay } from "../AutoplayContext";
 import { gate } from "../storyGate";
+import { usePetFlow } from "../PetFlowContext";
+import { usePetChatFlow, UploadBubble, type ChatChoice } from "./host/petChatFlow";
 import {
   DOG_TRAVEL_TITLE,
   PET_CARD_INTRO,
@@ -156,7 +158,9 @@ interface RuntimeMessage {
   citations?: string[];
   card?: ChatCard;
   /** Story-only message bodies rendered under the text. */
-  kind?: "pet-card";
+  kind?: "pet-card" | "uploads";
+  /** Quick replies shown under a Fin question (conversation mode of the pet story). */
+  choices?: ChatChoice[];
   timestamp: Date;
 }
 
@@ -403,6 +407,18 @@ export function ChatScreen({
     setStoryDone(true);
   };
 
+  // Conversation mode of the pet story: the same details gathered over several rounds, not on a card.
+  const { petFlow } = usePetFlow();
+  const chatFlow = usePetChatFlow({
+    autoplay,
+    finDone,
+    push: (m) => pushLive(m),
+    setThinking: setLiveThinking,
+    later,
+    onPetConfirm: handlePetConfirm,
+    onComplete: () => setStoryDone(true),
+  });
+
   useEffect(() => {
     if (!petStory) return;
     pushLive({ id: "story-user", role: "user", content: storyQuery });
@@ -412,14 +428,26 @@ export function ChatScreen({
   }, [petStory, autoplay]);
 
   // the pet card follows the reply after a beat (or on Space)
+  const introShownRef = useRef(false);
   useEffect(() => {
-    if (!cardDue) return;
-    return gate(autoplay, 1500, () =>
-      pushLive({ id: "story-card", role: "agent", content: PET_CARD_INTRO, kind: "pet-card" }),
-    );
+    // once the pet questions have started they never start again (e.g. if a setting is toggled later)
+    if (!cardDue || introShownRef.current) return;
+    return gate(autoplay, 1500, () => {
+      introShownRef.current = true;
+      if (petFlow === "chat") chatFlow.start();
+      else pushLive({ id: "story-card", role: "agent", content: PET_CARD_INTRO, kind: "pet-card" });
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardDue, autoplay]);
+  }, [cardDue, autoplay, petFlow]);
   const storyLocked = petStory && !storyDone;
+  // stable callback: runs once when the quick replies mount, so the thread follows them down
+  const scrollChoicesIntoView = useCallback((el: HTMLElement | null) => {
+    el?.scrollIntoView({ block: "end", behavior: "smooth" });
+  }, []);
+
+  /** Quick replies for the question Fin is waiting on; they sit on the traveler's side of the thread. */
+  const openChoices =
+    [...liveMessages].reverse().find((m) => m.choices && finDone[m.id] && chatFlow.isOpenFor(m.id))?.choices ?? null;
 
   const visibleMessages = [...runtimeMessages.slice(0, visibleCount), ...liveMessages];
   const nextMessage = runtimeMessages[visibleCount] ?? null;
@@ -682,7 +710,11 @@ export function ChatScreen({
                             className="rounded-[18px] px-[16px] py-[12px] text-white"
                             style={{ background: chatUserBubble }}
                           >
-                            <p className="text-[15px] leading-[22px]">{message.content}</p>
+                            {message.kind === "uploads" ? (
+                              <UploadBubble onDone={chatFlow.uploadsDone} />
+                            ) : (
+                              <p className="text-[15px] leading-[22px]">{message.content}</p>
+                            )}
                           </div>
                           <div
                             className="mt-[6px] flex items-center gap-[6px] text-[11px]"
@@ -855,6 +887,30 @@ export function ChatScreen({
                   </motion.div>
                 ))}
 
+                {openChoices && (
+                  <motion.div
+                    key="choices"
+                    ref={scrollChoicesIntoView}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mb-[18px] flex flex-col items-end gap-[8px]"
+                  >
+                    {openChoices.map((c) => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => chatFlow.pick(c.value)}
+                        className="rounded-full border bg-white px-[18px] py-[9px] text-[14px] font-medium hover:bg-[#F1F5FB] hover:shadow-[0_2px_8px_rgba(11,42,102,0.12)] active:bg-[#E3EBF8]"
+                        style={{ borderColor: dt.colors.host.searchCta, color: dt.colors.host.searchCta }}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+
                 {(isThinking || liveThinking) && (
                   <motion.div
                     key="thinking"
@@ -922,8 +978,13 @@ export function ChatScreen({
                     <FinComposer
                       value={promptValue}
                       onChange={handlePromptChange}
-                      onSend={() => sendLive(promptValue)}
-                      disabled={liveThinking || isThinking || storyLocked}
+                      onSend={() => {
+                        if (chatFlow.awaiting) {
+                          chatFlow.answerText(promptValue);
+                          setPromptValue("");
+                        } else sendLive(promptValue);
+                      }}
+                      disabled={liveThinking || isThinking || (storyLocked && !chatFlow.awaiting)}
                       onFocus={() => promptValue.trim() && setDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
                     />

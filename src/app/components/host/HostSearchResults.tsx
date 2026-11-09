@@ -1,4 +1,5 @@
 import { useSkin } from "../../SkinContext";
+import { motion } from "motion/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
@@ -15,6 +16,7 @@ import { useTokens } from "../../TokensContext";
 import { type SortOption } from "../SearchResultsControls";
 import { AiSummaryFeedback } from "../AiAssistCard";
 import { FinAiSummary } from "./FinAiSummary";
+import { SearchLoading } from "./SearchLoading";
 import { isPetTravelQuery, PET_SUGGESTIONS } from "../../content/petStory";
 import { HostBreadcrumb } from "./HostBreadcrumb";
 import { buildSmartSummary } from "../SmartSummaryBlock";
@@ -84,6 +86,15 @@ export function HostSearchResults({
       setSummaryOverflows(el.scrollHeight > el.clientHeight + 1);
     }
   });
+
+  // A short loading beat before the results appear (Skyline skins only), restarted for each new search.
+  const [loading, setLoading] = useState(compactSummary);
+  useEffect(() => {
+    if (!compactSummary) return;
+    setLoading(true);
+    const id = window.setTimeout(() => setLoading(false), 1300);
+    return () => window.clearTimeout(id);
+  }, [query, compactSummary]);
 
   const [draft, setDraft] = useState(query);
   const [askDraft, setAskDraft] = useState("");
@@ -239,6 +250,14 @@ export function HostSearchResults({
           </button>
         </div>
 
+        {loading ? (
+          <SearchLoading />
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          >
         {showSmartSummary && compactSummary && (
           <FinAiSummary
             lead={summaryPlain}
@@ -619,6 +638,8 @@ export function HostSearchResults({
               </button>
             </div>
           </div>
+        )}
+          </motion.div>
         )}
       </div>
     </div>

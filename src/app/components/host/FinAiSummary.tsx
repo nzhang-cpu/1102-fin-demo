@@ -151,7 +151,7 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
                 key={s}
                 type="button"
                 onClick={() => onAsk(s)}
-                className="rounded-full border bg-white px-[14px] py-[8px] text-[13px] font-medium transition-colors hover:border-current"
+                className="rounded-full border bg-white px-[14px] py-[8px] text-[13px] font-medium hover:border-[#0B2A66] hover:bg-[#F1F5FB] hover:shadow-[0_2px_8px_rgba(11,42,102,0.12)] active:bg-[#E3EBF8]"
                 style={{ borderColor: ui.borderLight, color: host.searchCta }}
               >
                 {s}

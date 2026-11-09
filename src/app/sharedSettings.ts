@@ -20,6 +20,7 @@ export interface SharedSettings {
   maturity: MaturityMode;
   autoplay: boolean;
   articleLayout: ArticleLayoutVariant;
+  petFlow?: "card" | "chat";
   features: Partial<FeatureFlags>;
 }
 
