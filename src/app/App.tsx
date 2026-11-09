@@ -20,7 +20,7 @@ import {
 import { ArticlePanel } from "@/app/components/ArticlePanel";
 import { GoogleSearchScreen } from "@/app/components/GoogleSearchScreen";
 import { TextEditorPanel } from "@/app/components/TextEditorPanel";
-import { BrowserEntranceTabs, type EntranceTab } from "@/app/components/BrowserEntranceTabs";
+import { type EntranceTab } from "@/app/components/BrowserEntranceTabs";
 import { MaturityToggle, type MaturityMode } from "@/app/components/MaturityToggle";
 import {
   FeatureChecklist,
@@ -559,7 +559,7 @@ function AppInner() {
   };
 
   return (
-    <div className="box-border h-dvh w-full max-w-full overflow-hidden flex items-stretch justify-start px-[clamp(12px,2vw,20px)] py-[clamp(12px,2vh,20px)] bg-[#c8c8d0]">
+    <div className="box-border h-dvh w-full max-w-full overflow-hidden flex items-stretch justify-start bg-white">
       <div
         className={`fixed left-0 top-0 bottom-0 z-[80] ${controlsOpen ? "" : "pointer-events-none"}`}
         style={{ width: controlsOpen ? 248 : 0 }}
@@ -589,28 +589,7 @@ function AppInner() {
         </aside>
       </div>
 
-      <div className="min-w-0 min-h-0 flex-1 flex flex-col rounded-[16px] overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.28)] border border-[#a8a8b0] bg-[#f0f0f4]">
-        <div className="relative grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-[8px] px-[10px] pt-[8px] h-[40px] bg-[#e4e4ea] border-b border-[#d0d0d8] flex-shrink-0 min-w-0">
-          <div className="flex items-end gap-[8px] min-w-0 overflow-hidden">
-            <div className="flex items-center gap-[7px] pb-[10px] pl-[4px] shrink-0">
-              <span className="size-[10px] rounded-full bg-[#ff5f57]" />
-              <span className="size-[10px] rounded-full bg-[#febc2e]" />
-              <span className="size-[10px] rounded-full bg-[#28c840]" />
-            </div>
-            <BrowserEntranceTabs value={entrance} onChange={handleEntranceChange} />
-          </div>
-
-          <div className="pb-[8px] flex justify-center min-w-0">
-            <div className="w-[min(280px,42vw)] h-[22px] rounded-full bg-white/80 border border-[#d0d0d8] flex items-center justify-center px-[10px]">
-              <p className="text-[10px] text-[#6b7280] truncate max-w-full" style={{ fontFamily: dt.fonts.families.body }}>
-                {addressBar}
-              </p>
-            </div>
-          </div>
-
-          <div className="min-w-0" aria-hidden />
-        </div>
-
+      <div className="min-w-0 min-h-0 flex-1 flex flex-col overflow-hidden bg-white">
         <div className="flex-1 min-h-0 min-w-0 flex flex-col relative overflow-hidden" style={cssVars}>
           <div className="flex h-full min-h-0 min-w-0">
             {showSidebar && (

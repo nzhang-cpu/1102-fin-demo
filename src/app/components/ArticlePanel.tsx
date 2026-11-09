@@ -1,6 +1,5 @@
 import { HostBreadcrumb } from "./host/HostBreadcrumb";
 import { FinAiSummary } from "./host/FinAiSummary";
-import { UnitedFooter } from "./host/UnitedFooter";
 import { X } from "lucide-react";
 import { useTokens } from "../TokensContext";
 import { useSkin } from "../SkinContext";
@@ -142,7 +141,7 @@ function HelpArticleLayout({
             {finStyle && showAiAssist && article.summary && (
               <FinAiSummary
                 lead={article.summary}
-                sources={[{ title: article.title, source: "united.com/help" }]}
+                sources={[{ title: article.title, source: "skylineairways.com/help" }]}
                 showFeedback={showSummaryFeedback}
                 onAsk={(q) => window.dispatchEvent(new CustomEvent("open-fin-chat", { detail: { query: q } }))}
               />
@@ -261,7 +260,6 @@ function HelpArticleLayout({
           )}
         </div>
         </div>
-        {finStyle && !compact && <UnitedFooter />}
       </div>
     </div>
   );

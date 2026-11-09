@@ -201,7 +201,7 @@ export function KnowledgeArticleScreen({
 
   const isAiZone = layoutVariant === "ai-zone" && showAiAssist;
   const { skin } = useSkin();
-  /** United pages run edge to edge so the site footer spans the whole browser width. */
+  /** Skyline pages run edge to edge so the site footer spans the whole browser width. */
   const fullBleed = !!skin.host.agent && !isAiZone;
 
   return (

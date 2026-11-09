@@ -23,7 +23,7 @@ interface FinAiSummaryProps {
   showFeedback?: boolean;
 }
 
-/** United-style AI summary card shared by the search results and article pages. */
+/** Skyline-style AI summary card shared by the search results and article pages. */
 /** Splits a sentence into [before, key phrase, after] so the answer can be highlighted. */
 function splitHighlight(s: string): [string, string, string] {
   const m = s.match(/^(.{24,100}?)(?=,| then | and |;|\.|$)/);

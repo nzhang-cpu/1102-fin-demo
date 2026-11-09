@@ -24,7 +24,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { SearchBar } from "../SearchBar";
-import { UnitedFooter } from "./UnitedFooter";
 import { SearchFirstPromptBar } from "../SearchFirstPromptBar";
 import { useTokens } from "../../TokensContext";
 
@@ -103,7 +102,7 @@ export const TOPICS: Topic[] = [
     icon: Heart,
     intro: "Share feedback, request compensation or recognize an employee.",
     links: [
-      { label: "Contact us", blurb: "Ways to reach a United representative" },
+      { label: "Contact us", blurb: "Ways to reach a Skyline representative" },
       { label: "Share feedback", blurb: "Tell us about your experience" },
       { label: "Compensation request", blurb: "Ask for compensation after a disruption" },
       { label: "Recognize an employee", blurb: "Thank someone who helped you" },
@@ -208,25 +207,25 @@ export const TOPICS: Topic[] = [
     ],
   },
   {
-    label: "United Club and lounges",
+    label: "Skyline Club and lounges",
     icon: Wine,
-    intro: "Relax before you fly in a United Club or partner lounge.",
+    intro: "Relax before you fly in a Skyline Club or partner lounge.",
     links: [
       { label: "Club access", blurb: "Who can enter and how to get in" },
-      { label: "Locations", blurb: "Find a United Club near you" },
+      { label: "Locations", blurb: "Find a Skyline Club near you" },
       { label: "Day passes", blurb: "Buy single-visit access" },
     ],
   },
 ];
 
 export const HELP_OPTIONS: { icon: LucideIcon; title: string; note?: string; link?: string; action?: "chat" | "search" }[] = [
-  { icon: Search, title: "Search united.com", link: "Find answers", action: "search" },
-  { icon: Smartphone, title: "Text an agent", note: 'Text "UNITED" to 32050.' },
+  { icon: Search, title: "Search skylineairways.com", link: "Find answers", action: "search" },
+  { icon: Smartphone, title: "Text an agent", note: 'Text "SKYLINE" to 32050.' },
   { icon: MessagesSquare, title: "Chat with us", note: "Agents available", link: "Chat now", action: "chat" },
   { icon: Headphones, title: "Call an agent", link: "View directory" },
 ];
 
-/** Bespoke United Help Center landing page: the demo's search replaces the sign-in and find-a-trip cards. */
+/** Bespoke Skyline Help Center landing page: the demo's search replaces the sign-in and find-a-trip cards. */
 export function UnitedHelpHome({ onSearch, variant, showSuggestions = true, showEscalation = false }: UnitedHelpHomeProps) {
   const { tokens } = useTokens();
   const [active, setActive] = useState("Seats and upgrades");
@@ -341,7 +340,7 @@ export function UnitedHelpHome({ onSearch, variant, showSuggestions = true, show
                 {o.link && (
                   <button
                     type="button"
-                    onClick={() => (o.action === "chat" ? openChat() : o.action === "search" ? onSearch?.("united.com") : undefined)}
+                    onClick={() => (o.action === "chat" ? openChat() : o.action === "search" ? onSearch?.("skylineairways.com") : undefined)}
                     className="mt-[8px] inline-flex items-center gap-[2px] text-[13px] underline"
                     style={{ color: BLUE }}
                   >
@@ -355,7 +354,6 @@ export function UnitedHelpHome({ onSearch, variant, showSuggestions = true, show
         </div>
       </div>
 
-      <UnitedFooter />
     </motion.div>
   );
 }

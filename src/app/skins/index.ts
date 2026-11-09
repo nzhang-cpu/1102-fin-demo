@@ -233,7 +233,7 @@ export function buildSouthwestDesignTokens(): DesignTokens {
   return dt;
 }
 
-/** United Airlines Help Center — United blue host paint (brand values, not scraped from united.com). */
+/** Skyline Airways Help Center — Skyline blue host paint (brand values, not scraped from skylineairways.com). */
 export function buildUnitedDesignTokens(): DesignTokens {
   const dt = deepClone(defaultDt) as DesignTokens;
   const unitedBlue = "#1414D2";
@@ -279,7 +279,7 @@ export function buildUnitedDesignTokens(): DesignTokens {
   dt.fonts.families.heading = "'Helvetica Neue', Helvetica, Arial, sans-serif";
   dt.themes.skyPeriwinkle = {
     id: "united",
-    label: "United",
+    label: "Skyline",
     gradient: `linear-gradient(135deg, ${unitedBlue} 0%, #6B6BE6 60%, #B8B8F2 100%)`,
     swatchA: unitedBlue,
     swatchB: "#B8B8F2",
@@ -361,21 +361,21 @@ export const COMPANY_SKINS: CompanySkin[] = [
   },
   {
     id: "united",
-    label: "United",
+    label: "Skyline",
     hint: "Help Center host + shared essence",
     designTokens: buildUnitedDesignTokens(),
     tokens: buildTokens(
       unitedGenerated as unknown as Record<string, unknown>,
-      "United",
+      "Skyline",
     ),
     host: {
-      addressBarHost: "united.com/en/us/fly/help-center.html",
+      addressBarHost: "skylineairways.com/en/us/fly/help-center.html",
       showProductChrome: false,
       shell: "help-center",
       showChatFab: true,
       navLogo: unitedLogo,
       agent: {
-        label: "Fin from UA",
+        label: "Fin from Skyline",
         logo: finLogo,
         suggestions: [
           "How do I check in for my flight?",
@@ -383,13 +383,13 @@ export const COMPANY_SKINS: CompanySkin[] = [
           "Change or cancel my flight",
         ],
         greeting: [
-          "Welcome to United Messaging!",
-          "I’m United’s AI-powered Virtual Assistant here to help answer your travel questions. [Note: Some answers may be AI-generated based on content from united.com. Please check the source links for up-to-date information.]",
-          "Don’t want to be tied to your desktop? For the same service on the go, text “UNITED” to 32050 on your mobile device.",
+          "Welcome to Skyline Messaging!",
+          "I’m Skyline’s AI-powered Virtual Assistant here to help answer your travel questions. [Note: Some answers may be AI-generated based on content from skylineairways.com. Please check the source links for up-to-date information.]",
+          "Don’t want to be tied to your desktop? For the same service on the go, text “SKYLINE” to 32050 on your mobile device.",
           "How can I help you today?",
         ].join("\n\n"),
       },
-      navItems: ["Booking", "Manage my trips", "Travel info", "MileagePlus", "United cards", "Deals", "Help"],
+      navItems: ["Booking", "Manage my trips", "Travel info", "MileagePlus", "Skyline cards", "Deals", "Help"],
     },
     layout: {
       home: "united-help",
@@ -399,7 +399,7 @@ export const COMPANY_SKINS: CompanySkin[] = [
   },
 ];
 
-/** UA Futuristic: same United content and Fin, with an aurora-glass home page. */
+/** Skyline Futuristic: same Skyline content and Fin, with an aurora-glass home page. */
 export function buildUnitedFuturisticDesignTokens(): DesignTokens {
   const dt = buildUnitedDesignTokens();
   dt.colors.host.pageBg = "#F4F6FF";
@@ -407,7 +407,7 @@ export function buildUnitedFuturisticDesignTokens(): DesignTokens {
   dt.gradients.pageBackground = "#F4F6FF";
   dt.themes.skyPeriwinkle = {
     id: "united-futuristic",
-    label: "UA Futuristic",
+    label: "Skyline Futuristic",
     gradient: "linear-gradient(135deg, #1414D2 0%, #6B5BFF 55%, #22D3EE 100%)",
     swatchA: "#1414D2",
     swatchB: "#22D3EE",
@@ -420,7 +420,7 @@ const UNITED_SKIN = COMPANY_SKINS.find((k) => k.id === "united")!;
 COMPANY_SKINS.push({
   ...UNITED_SKIN,
   id: "united-futuristic",
-  label: "UA Futuristic",
+  label: "Skyline Futuristic",
   hint: "Aurora glass home + Fin",
   designTokens: buildUnitedFuturisticDesignTokens(),
   host: { ...UNITED_SKIN.host },

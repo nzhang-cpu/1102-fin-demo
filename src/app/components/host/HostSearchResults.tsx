@@ -107,7 +107,7 @@ export function HostSearchResults({
         const article = catalog.find((a) => a.title === cit.title);
         return {
           title: cit.title,
-          source: "united.com/help",
+          source: "skylineairways.com/help",
           onOpen: article ? () => onOpenArticle(article) : undefined,
         };
       }),

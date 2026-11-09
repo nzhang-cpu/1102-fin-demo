@@ -122,7 +122,7 @@ export function SearchFirstPromptBar({
   const canSubmit = searchQuery.trim().length > 0;
 
   const { skin } = useSkin();
-  /** United help home sits the bar directly on a solid blue card, so the pill frame is clear. */
+  /** Skyline help home sits the bar directly on a solid blue card, so the pill frame is clear. */
   const clearFrame = skin.layout.home === "united-help" || skin.layout.home === "united-futuristic";
   const GLOW = clearFrame ? "none" : dt.shadows.searchGlow;
 

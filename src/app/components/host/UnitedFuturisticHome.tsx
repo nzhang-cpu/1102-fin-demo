@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight, ChevronDown, Plane } from "lucide-react";
 import { SearchFirstPromptBar } from "../SearchFirstPromptBar";
-import { UnitedFooter } from "./UnitedFooter";
 import { useTokens } from "../../TokensContext";
 
 interface UnitedFuturisticHomeProps {
@@ -186,7 +185,7 @@ function QuickMenus({ onPick }: { onPick?: (query: string) => void }) {
 const glass =
   "bg-white/65 backdrop-blur-xl border border-white/70 shadow-[0_10px_40px_rgba(20,20,210,0.10)]";
 
-/** Aurora-glass take on the United help home: same content and Fin, a forward-looking skin. */
+/** Aurora-glass take on the Skyline help home: same content and Fin, a forward-looking skin. */
 export function UnitedFuturisticHome({ onSearch, variant, showSuggestions = true, showEscalation = false }: UnitedFuturisticHomeProps) {
   const { tokens } = useTokens();
   const name = tokens.hero?.userName || "there";
@@ -297,7 +296,6 @@ export function UnitedFuturisticHome({ onSearch, variant, showSuggestions = true
       </div>
       </div>
 
-      <UnitedFooter />
     </motion.div>
   );
 }

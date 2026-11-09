@@ -222,7 +222,7 @@ export function FinMessenger({
                     animate
                     onDone={() => setDoneIds((d) => (d.has(m.id) ? d : new Set(d).add(m.id)))}
                     text={m.text}
-                    citations={m.source ? [{ title: m.source, source: "united.com/help" }] : []}
+                    citations={m.source ? [{ title: m.source, source: "skylineairways.com/help" }] : []}
                   />
                 </div>
                 <span

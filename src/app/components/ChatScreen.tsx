@@ -33,7 +33,7 @@ import { FinCitedText, FinThinking } from "./host/FinCitation";
 import { PetInfoCard, type PetType } from "./host/PetInfoCard";
 import { ArticleSkeleton } from "./host/ArticleSkeleton";
 import { useAutoplay } from "../AutoplayContext";
-import { gate, useStoryWaiting } from "../storyGate";
+import { gate } from "../storyGate";
 import {
   DOG_TRAVEL_TITLE,
   PET_CARD_INTRO,
@@ -362,7 +362,6 @@ export function ChatScreen({
   const [storyDone, setStoryDone] = useState(false);
   const [cardDue, setCardDue] = useState(false);
   const { autoplay } = useAutoplay();
-  const storyWaiting = useStoryWaiting();
   const startedRef = useRef(false);
   const storyTimers = useRef<number[]>([]);
   const later = (ms: number, fn: () => void) => {
@@ -733,7 +732,7 @@ export function ChatScreen({
                                   citations={(message.citations ?? []).flatMap((title) => {
                                     const a = articles.find((x) => x.title === title);
                                     return a
-                                      ? [{ title: a.title, source: "united.com/help", onOpen: () => setSelectedArticle(a) }]
+                                      ? [{ title: a.title, source: "skylineairways.com/help", onOpen: () => setSelectedArticle(a) }]
                                       : [];
                                   })}
                                 />
@@ -918,16 +917,6 @@ export function ChatScreen({
           >
             {helpChat ? (
               <>
-                {petStory && !autoplay && storyWaiting && (
-                  <div className="mb-[10px] flex justify-center">
-                    <span
-                      className="rounded-full border bg-white px-[12px] py-[5px] text-[12px] font-medium"
-                      style={{ borderColor: dt.colors.ui.borderLight, color: dt.colors.ui.muted }}
-                    >
-                      Press <kbd className="font-semibold text-black">Space</kbd> to continue
-                    </span>
-                  </div>
-                )}
                 <div className="relative w-full" ref={inputBarRef}>
                   {skin.host.agent ? (
                     <FinComposer
