@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import type { ComposerFile } from "./FinComposer";
 import { gate } from "../../storyGate";
 import { PET_FINAL_REPLY } from "../../content/petStory";
 import type { PetType } from "./PetInfoCard";
@@ -124,14 +125,18 @@ export function usePetChatFlow(o: Options) {
     );
   };
 
+  /** The documents land in the prompt bar first and load there; they are sent once they finish. */
+  const [attached, setAttached] = useState<ComposerFile[]>([]);
+
   const answerDocs = () => {
     if (phaseRef.current !== "docs") return;
     setPhase("busy");
-    o.push({ id: "pc-a-docs", role: "user", content: "Uploaded 3 files", kind: "uploads" });
+    setAttached(FILES.map((f) => ({ ...f, progress: 0 })));
   };
 
-  /** Called by the upload bubble once its three files finish. */
-  const uploadsDone = () => {
+  const sendFiles = () => {
+    setAttached([]);
+    o.push({ id: "pc-a-docs", role: "user", content: "Sent 3 files", kind: "uploads" });
     fin(
       {
         id: "pc-done",
@@ -142,6 +147,19 @@ export function usePetChatFlow(o: Options) {
       1500,
     );
   };
+
+  useEffect(() => {
+    if (attached.length === 0) return;
+    if (attached.every((f) => f.progress >= 100)) {
+      const id = window.setTimeout(sendFiles, 900);
+      return () => window.clearTimeout(id);
+    }
+    const id = window.setInterval(() => {
+      setAttached((fs) => fs.map((f, i) => (f.progress >= 100 ? f : { ...f, progress: Math.min(100, f.progress + 14 + ((i * 7) % 9)) })));
+    }, 300);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attached]);
 
   // after the confirmation, Fin closes the loop with the verdict
   useEffect(() => {
@@ -191,52 +209,22 @@ export function usePetChatFlow(o: Options) {
       else if (phaseRef.current === "weight") answerWeight(rangeFromText(t));
       else if (phaseRef.current === "docs") answerDocs();
     },
-    uploadsDone,
+    /** Files loading in the prompt bar. */
+    attachments: attached,
   };
 }
 
-/** The traveler's upload message: three files that fill their progress bars, then report back. */
-export function UploadBubble({ onDone }: { onDone: () => void }) {
-  const [progress, setProgress] = useState([0, 0, 0]);
-  const fired = useRef(false);
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setProgress((p) => p.map((v, i) => Math.min(100, v + 14 + ((i * 7) % 9))));
-    }, 300);
-    return () => window.clearInterval(id);
-  }, []);
-
-  // keep the latest callback in a ref: the parent re-renders often and must not cancel the pending finish
-  const doneRef = useRef(onDone);
-  doneRef.current = onDone;
-  useEffect(() => {
-    if (progress.every((v) => v >= 100) && !fired.current) {
-      fired.current = true;
-      window.setTimeout(() => doneRef.current(), 900);
-    }
-  }, [progress]);
-
+/** The traveler's sent files: the same three documents, already uploaded. */
+export function UploadBubble() {
   return (
     <ul className="flex w-[300px] max-w-full flex-col gap-[8px] text-left">
-      {FILES.map((f, i) => {
-        const done = progress[i] >= 100;
-        return (
-          <li key={f.name} className="rounded-[10px] bg-white/15 px-[12px] py-[8px]">
-            <div className="flex items-center gap-[8px] text-[13px]">
-              {done ? <CheckCircle2 className="size-[15px]" /> : <Loader2 className="size-[15px] animate-spin" />}
-              <span className="min-w-0 flex-1 truncate font-medium">{f.name}</span>
-              <span className="opacity-75">{f.size}</span>
-            </div>
-            <div className="mt-[6px] h-[3px] overflow-hidden rounded-full bg-white/25">
-              <div
-                className="h-full rounded-full bg-white transition-[width] duration-300"
-                style={{ width: `${progress[i]}%` }}
-              />
-            </div>
-          </li>
-        );
-      })}
+      {FILES.map((f) => (
+        <li key={f.name} className="flex items-center gap-[8px] rounded-[10px] bg-white/15 px-[12px] py-[8px] text-[13px]">
+          <CheckCircle2 className="size-[15px] shrink-0" />
+          <span className="min-w-0 flex-1 truncate font-medium">{f.name}</span>
+          <span className="opacity-75">{f.size}</span>
+        </li>
+      ))}
     </ul>
   );
 }

@@ -711,7 +711,7 @@ export function ChatScreen({
                             style={{ background: chatUserBubble }}
                           >
                             {message.kind === "uploads" ? (
-                              <UploadBubble onDone={chatFlow.uploadsDone} />
+                              <UploadBubble />
                             ) : (
                               <p className="text-[15px] leading-[22px]">{message.content}</p>
                             )}
@@ -895,7 +895,7 @@ export function ChatScreen({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="mb-[18px] flex flex-col items-end gap-[8px]"
+                    className="mb-[18px] flex flex-row flex-wrap items-center justify-end gap-[8px]"
                   >
                     {openChoices.map((c) => (
                       <button
@@ -976,6 +976,7 @@ export function ChatScreen({
                 <div className="relative w-full" ref={inputBarRef}>
                   {skin.host.agent ? (
                     <FinComposer
+                      attachments={chatFlow.attachments}
                       value={promptValue}
                       onChange={handlePromptChange}
                       onSend={() => {
@@ -984,7 +985,7 @@ export function ChatScreen({
                           setPromptValue("");
                         } else sendLive(promptValue);
                       }}
-                      disabled={liveThinking || isThinking || (storyLocked && !chatFlow.awaiting)}
+                      disabled={liveThinking || isThinking || chatFlow.attachments.length > 0 || (storyLocked && !chatFlow.awaiting)}
                       onFocus={() => promptValue.trim() && setDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
                     />
