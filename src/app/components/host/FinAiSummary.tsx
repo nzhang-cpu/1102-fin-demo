@@ -26,7 +26,7 @@ interface FinAiSummaryProps {
 /** Skyline-style AI summary card shared by the search results and article pages. */
 /** Splits a sentence into [before, key phrase, after] so the answer can be highlighted. */
 function splitHighlight(s: string): [string, string, string] {
-  const m = s.match(/^(.{24,100}?)(?=,| then | and |;|\.|$)/);
+  const m = s.match(/^(.{24,100}?)(?=,| then | and |;|\.(?=\s|$)|$)/);
   const hl = m ? m[1] : s;
   return ["", hl, s.slice(hl.length)];
 }
@@ -64,18 +64,18 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
 
   return (
     <div
-      className="mb-[18px] rounded-[10px] border bg-white overflow-hidden"
-      style={{ borderColor: "#D6D6D6", borderTop: `4px solid ${host.searchCta}` }}
+      className="mb-[8px] overflow-hidden rounded-[24px] border bg-white/90 shadow-[0_10px_36px_rgba(30,64,200,0.10)] backdrop-blur-md"
+      style={{ borderColor: "rgba(255,255,255,0.9)", borderTop: `3px solid ${host.searchCta}` }}
     >
-      <div className="px-[18px] pt-[16px] pb-[14px]">
-        <div className="flex items-center mb-[14px]">
+      <div className="px-[28px] pt-[24px] pb-[18px]">
+        <div className="flex items-center mb-[16px]">
           <span className="text-[16px] font-semibold" style={{ color: host.searchCta }}>
             AI Summary
           </span>
         </div>
         <p
           ref={ref}
-          className={`text-[15px] leading-[22px] mb-[4px] ${expanded ? "" : "line-clamp-3"}`}
+          className={`text-[15px] leading-[24px] mb-[6px] ${expanded ? "" : "line-clamp-3"}`}
           style={{ color: ui.body }}
         >
           {before}
@@ -103,7 +103,7 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
       </div>
 
       {onAsk && (
-        <div className="px-[18px] pb-[14px]">
+        <div className="px-[28px] pb-[20px]">
           <div
             className={`relative rounded-[999px] p-[1.5px] transition-shadow duration-200 ${
               focused ? "shadow-[0_0_0_3px_rgba(11,42,102,0.16)]" : "shadow-[0_2px_10px_rgba(15,40,50,0.06)]"
@@ -163,7 +163,7 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
       )}
 
       <div
-        className="flex items-center justify-between gap-[12px] px-[18px] py-[12px] border-t bg-white/70"
+        className="flex items-center justify-between gap-[12px] px-[28px] py-[16px] border-t bg-white/60"
         style={{ borderColor: ui.borderFaint }}
       >
         <span className="text-[13px]" style={{ color: ui.body }}>
@@ -174,7 +174,7 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
             <button
               key={l}
               type="button"
-              className="h-[32px] px-[16px] rounded-[4px] border bg-white text-[13px] font-semibold hover:opacity-90"
+              className="h-[34px] px-[18px] rounded-full border bg-white text-[13px] font-semibold hover:bg-[#F1F5FB] hover:shadow-[0_2px_8px_rgba(11,42,102,0.12)]"
               style={{ borderColor: host.searchCta, color: brand.navy }}
             >
               {l}

@@ -17,6 +17,7 @@ import { type SortOption } from "../SearchResultsControls";
 import { AiSummaryFeedback } from "../AiAssistCard";
 import { FinAiSummary } from "./FinAiSummary";
 import { SearchLoading } from "./SearchLoading";
+import { ModernSearchResults } from "./ModernSearchResults";
 import { isPetTravelQuery, PET_SUGGESTIONS } from "../../content/petStory";
 import { HostBreadcrumb } from "./HostBreadcrumb";
 import { buildSmartSummary } from "../SmartSummaryBlock";
@@ -191,6 +192,53 @@ export function HostSearchResults({
       .filter((v, i, arr) => arr.indexOf(v) === i)
       .slice(0, 3);
   }, [smartSummary.citations, results]);
+
+  // Skyline skins get the modern results page; every other skin keeps the classic layout below.
+  if (compactSummary) {
+    const matchedCategories = Array.from(
+      new Set(
+        catalog
+          .filter((a) => {
+            const q = query.toLowerCase();
+            if (!q) return true;
+            const hay = `${a.title} ${a.subtitle} ${a.category} ${a.summary ?? ""} ${a.content}`.toLowerCase();
+            return hay.includes(q) || q.split(/\s+/).some((w) => w.length > 2 && hay.includes(w));
+          })
+          .map((a) => a.category),
+      ),
+    );
+    return (
+      <ModernSearchResults
+        query={query}
+        draft={draft}
+        setDraft={setDraft}
+        onSubmit={submit}
+        onHome={onHome}
+        loading={loading}
+        showSummary={showSmartSummary && matchedCategories.length > 0}
+        summary={{
+          lead: summaryPlain,
+          body: smartSummary.detail.replace(/\n\n/g, " "),
+          sources: summarySources,
+          suggestions: isPetTravelQuery(query) ? PET_SUGGESTIONS : undefined,
+          onAsk: onStartConversation ? (q) => submitAsk(q) : undefined,
+          showFeedback: showSummaryFeedback,
+        }}
+        categories={matchedCategories}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        total={total}
+        pageItems={pageItems}
+        snippet={(a) => resultSnippet(a as HostArticleDetails)}
+        onOpenArticle={(a) => onOpenArticle(a as HostArticleDetails)}
+        page={safePage}
+        totalPages={totalPages}
+        setPage={setPage}
+      />
+    );
+  }
 
   return (
     <div
