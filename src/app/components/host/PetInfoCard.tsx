@@ -41,7 +41,7 @@ type Stage = "pet" | "upload" | "processing" | "success";
 export function PetInfoCard({ onPetTypeConfirm, onComplete }: PetInfoCardProps) {
   const { autoplay } = useAutoplay();
   const { dt } = useDesignTokens();
-  const blue = dt.colors.host.link;
+  const blue = dt.colors.host.searchCta; // navy, same as the buttons
   const ui = dt.colors.ui;
 
   const [stage, setStage] = useState<Stage>("pet");
@@ -146,7 +146,7 @@ export function PetInfoCard({ onPetTypeConfirm, onComplete }: PetInfoCardProps) 
   const pressStyle = (on: boolean) => ({
     background: blue,
     transform: on ? "scale(0.96)" : "scale(1)",
-    boxShadow: on ? "0 0 0 4px rgba(20,20,210,0.22)" : "none",
+    boxShadow: on ? "0 0 0 4px rgba(11,42,102,0.22)" : "none",
   });
 
   return (
@@ -183,7 +183,7 @@ export function PetInfoCard({ onPetTypeConfirm, onComplete }: PetInfoCardProps) 
                     className="relative overflow-hidden rounded-[12px] border-2 text-left transition-colors"
                     style={{
                       borderColor: on ? blue : ui.borderLight,
-                      boxShadow: on ? "0 6px 18px rgba(20,20,210,0.18)" : "none",
+                      boxShadow: on ? "0 6px 18px rgba(11,42,102,0.18)" : "none",
                     }}
                   >
                     {on && (
@@ -197,7 +197,7 @@ export function PetInfoCard({ onPetTypeConfirm, onComplete }: PetInfoCardProps) 
                     <img src={p.image} alt={p.label} className="block aspect-square w-full object-cover" />
                     <span
                       className="block py-[8px] text-center text-[14px] font-semibold"
-                      style={{ background: on ? "#F2F2FF" : "#fff" }}
+                      style={{ background: on ? "#EEF2FA" : "#fff" }}
                     >
                       {p.label}
                     </span>

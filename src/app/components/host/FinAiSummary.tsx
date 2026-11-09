@@ -65,11 +65,11 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
   return (
     <div
       className="mb-[18px] rounded-[10px] border bg-white overflow-hidden"
-      style={{ borderColor: "#D6D6D6", borderTop: `4px solid ${host.link}` }}
+      style={{ borderColor: "#D6D6D6", borderTop: `4px solid ${host.searchCta}` }}
     >
       <div className="px-[18px] pt-[16px] pb-[14px]">
         <div className="flex items-center mb-[14px]">
-          <span className="text-[16px] font-semibold" style={{ color: host.link }}>
+          <span className="text-[16px] font-semibold" style={{ color: host.searchCta }}>
             AI Summary
           </span>
         </div>
@@ -94,7 +94,7 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
             type="button"
             onClick={() => setExpanded((v) => !v)}
             className="mb-[10px] text-[14px] font-semibold hover:underline"
-            style={{ color: host.link }}
+            style={{ color: host.searchCta }}
           >
             {expanded ? "View less" : "View more"}
           </button>
@@ -106,9 +106,9 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
         <div className="px-[18px] pb-[14px]">
           <div
             className={`relative rounded-[999px] p-[1.5px] transition-shadow duration-200 ${
-              focused ? "shadow-[0_0_0_3px_rgba(20,20,210,0.14)]" : "shadow-[0_2px_10px_rgba(15,40,50,0.06)]"
+              focused ? "shadow-[0_0_0_3px_rgba(11,42,102,0.16)]" : "shadow-[0_2px_10px_rgba(15,40,50,0.06)]"
             }`}
-            style={{ background: focused ? host.link : ui.borderLight }}
+            style={{ background: focused ? host.searchCta : ui.borderLight }}
           >
             <div className="flex items-center gap-[8px] rounded-full bg-white pl-[16px] pr-[6px] py-[6px]">
               <input
@@ -152,7 +152,7 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
                 type="button"
                 onClick={() => onAsk(s)}
                 className="rounded-full border bg-white px-[14px] py-[8px] text-[13px] font-medium transition-colors hover:border-current"
-                style={{ borderColor: ui.borderLight, color: host.link }}
+                style={{ borderColor: ui.borderLight, color: host.searchCta }}
               >
                 {s}
               </button>

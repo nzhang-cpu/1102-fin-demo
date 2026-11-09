@@ -106,15 +106,15 @@ export function HostShell({
         }}
       >
         {navItems ? (
-          <div className="flex items-center gap-[22px] px-[20px] h-[56px] max-w-[1120px] mx-auto w-full">
+          <div className="flex items-center gap-[24px] px-[32px] h-[68px] w-full">
             <button
               type="button"
               onClick={onHome}
-              className="shrink-0 size-[44px] flex items-center justify-center"
+              className="shrink-0 h-[32px] flex items-center pr-[24px] border-r border-white/20"
               aria-label={`Go to ${brand} Help Center`}
             >
               {skin.host.navLogo ? (
-                <img src={skin.host.navLogo} alt={brand} className="size-full" />
+                <img src={skin.host.navLogo} alt={brand} className="h-full w-auto" />
               ) : (
                 <Globe className="size-[26px] text-white" strokeWidth={1.5} />
               )}
@@ -278,13 +278,13 @@ export function HostShell({
             hasMessenger ? setMessengerOpen((v) => !v) : onSearch?.(`Chat with ${brand} support`)
           }
           className="absolute bottom-[20px] right-[20px] size-[52px] rounded-full text-white shadow-[0_8px_24px_rgba(0,0,0,0.2)] flex items-center justify-center z-20"
-          style={{ background: host.link }}
+          style={{ background: hasMessenger ? host.searchCta : host.link }}
           aria-label="Open chat"
         >
           {hasMessenger && messengerOpen ? (
             <ChevronDown className="size-[22px]" />
           ) : hasMessenger ? (
-            <ChatBubbleMark color={host.link} />
+            <ChatBubbleMark color={host.searchCta} />
           ) : (
             <MessageCircle className="size-[22px]" />
           )}

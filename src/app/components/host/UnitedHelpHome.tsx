@@ -46,7 +46,7 @@ export interface Topic {
   links: TopicLink[];
 }
 
-const BLUE = "#1414D2";
+const BLUE = "#1E40C8";
 const INK = "#000000";
 
 export const TOPICS: Topic[] = [

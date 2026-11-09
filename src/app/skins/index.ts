@@ -6,7 +6,7 @@ import fixedJson from "../content/fixed.json";
 import disneyPlusGenerated from "../content/generated script/generated_disney_plus.json";
 import southwestGenerated from "../content/generated script/generated_southwest.json";
 import finLogo from "../assets/logos/fin-white.png";
-import unitedLogo from "../assets/logos/united.svg";
+import unitedLogo from "../assets/logos/skyline-nav.png";
 import unitedGenerated from "../content/generated script/generated_united.json";
 
 export type CompanySkinId = "default" | "disney-plus" | "southwest" | "united" | "united-futuristic";
@@ -236,37 +236,37 @@ export function buildSouthwestDesignTokens(): DesignTokens {
 /** Skyline Airways Help Center — Skyline blue host paint (brand values, not scraped from skylineairways.com). */
 export function buildUnitedDesignTokens(): DesignTokens {
   const dt = deepClone(defaultDt) as DesignTokens;
-  const unitedBlue = "#1414D2";
-  const linkBlue = "#1414D2";
-  const deepBlue = "#000000";
+  const unitedBlue = "#1E40C8"; // Skyline blue: links, highlights
+  const linkBlue = "#1E40C8";
+  const deepBlue = "#0B2A66"; // Skyline navy: headings, primary buttons
   dt.colors.brand.navy = deepBlue;
   dt.colors.brand.navyDeep = linkBlue;
   dt.colors.brand.purple = unitedBlue;
   dt.colors.brand.purpleDark = deepBlue;
   dt.colors.brand.purpleMid = "#2A2A2A";
-  dt.colors.ui.body = "#000000";
+  dt.colors.ui.body = "#0B1B3F";
   dt.colors.ui.muted = "#6B7280";
   dt.colors.ui.mutedDark = "#4B5563";
-  dt.colors.ui.iconStroke = "#000000";
+  dt.colors.ui.iconStroke = "#0B1B3F";
   dt.colors.ui.borderLight = "#C9CED6";
   dt.colors.ui.borderFaint = "#E5E7EB";
   dt.colors.ui.bgPage = "#FFFFFF";
   dt.colors.ui.bgInput = "#FFFFFF";
   dt.colors.accent.indigo = unitedBlue;
-  dt.colors.accent.sky = "#6B6BE6";
-  dt.colors.host.navBg = "#000000";
+  dt.colors.accent.sky = "#5B8DEF";
+  dt.colors.host.navBg = "#0A1F4D";
   dt.colors.host.navText = "#FFFFFF";
   dt.colors.host.bannerBg = "#F2F2F2";
   dt.colors.host.bannerBorder = "#D0D0D0";
   dt.colors.host.bannerIcon = unitedBlue;
   dt.colors.host.link = linkBlue;
   dt.colors.host.pageBg = "#FFFFFF";
-  dt.colors.host.chatUserBubble = unitedBlue;
+  dt.colors.host.chatUserBubble = deepBlue;
   dt.colors.host.chatAgentBubble = "#F2F2F2";
   dt.colors.host.chatAvatarBg = deepBlue;
   dt.colors.host.aiSummaryAccent = unitedBlue;
   dt.colors.host.aiSummaryBg = "#F2F2F2";
-  dt.colors.host.searchCta = unitedBlue;
+  dt.colors.host.searchCta = deepBlue;
   dt.colors.host.searchCtaAlt = "#EDEDED";
   dt.colors.host.tileAccent = unitedBlue;
   dt.gradients.pageBackground = "#FFFFFF";
@@ -274,15 +274,15 @@ export function buildUnitedDesignTokens(): DesignTokens {
   dt.gradients.button.primary = `linear-gradient(180deg, ${unitedBlue} 0%, ${deepBlue} 100%)`;
   dt.gradients.button.send = `linear-gradient(180deg, ${unitedBlue} 0%, ${deepBlue} 100%)`;
   dt.gradients.button.indigo = `linear-gradient(180deg, ${unitedBlue} 0%, ${deepBlue} 100%)`;
-  dt.shadows.searchGlow = "0 2px 12px rgba(20, 20, 210, 0.14)";
+  dt.shadows.searchGlow = "0 2px 12px rgba(30,64,200, 0.14)";
   dt.fonts.families.body = "'Helvetica Neue', Helvetica, Arial, sans-serif";
   dt.fonts.families.heading = "'Helvetica Neue', Helvetica, Arial, sans-serif";
   dt.themes.skyPeriwinkle = {
     id: "united",
     label: "Skyline",
-    gradient: `linear-gradient(135deg, ${unitedBlue} 0%, #6B6BE6 60%, #B8B8F2 100%)`,
+    gradient: `linear-gradient(135deg, ${unitedBlue} 0%, #5B8DEF 60%, #E5122B 100%)`,
     swatchA: unitedBlue,
-    swatchB: "#B8B8F2",
+    swatchB: "#E5122B",
     textColor: deepBlue,
   };
   return dt;
@@ -402,16 +402,16 @@ export const COMPANY_SKINS: CompanySkin[] = [
 /** Skyline Futuristic: same Skyline content and Fin, with an aurora-glass home page. */
 export function buildUnitedFuturisticDesignTokens(): DesignTokens {
   const dt = buildUnitedDesignTokens();
-  dt.colors.host.pageBg = "#F4F6FF";
-  dt.colors.host.chatAgentBubble = "#EEF1FF";
-  dt.gradients.pageBackground = "#F4F6FF";
+  dt.colors.host.pageBg = "#EEF4FD";
+  dt.colors.host.chatAgentBubble = "#EAF1FC";
+  dt.gradients.pageBackground = "#EEF4FD";
   dt.themes.skyPeriwinkle = {
     id: "united-futuristic",
     label: "Skyline Futuristic",
-    gradient: "linear-gradient(135deg, #1414D2 0%, #6B5BFF 55%, #22D3EE 100%)",
-    swatchA: "#1414D2",
-    swatchB: "#22D3EE",
-    textColor: "#000000",
+    gradient: "linear-gradient(135deg, #1E40C8 0%, #5B8DEF 55%, #9EC5F5 100%)",
+    swatchA: "#1E40C8",
+    swatchB: "#9EC5F5",
+    textColor: "#0B1B3F",
   };
   return dt;
 }
