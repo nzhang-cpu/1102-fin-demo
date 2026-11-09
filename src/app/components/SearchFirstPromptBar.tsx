@@ -128,7 +128,9 @@ export function SearchFirstPromptBar({
 
   // Closed radii are half the bar's height (72px outer, 64px inner), not 100px, so the
   // morph to the open shape animates evenly instead of lagging and then snapping.
-  const inputWrapperStyle: React.CSSProperties = isOpen
+  // The auto-typed demo bar keeps its size and shape while focused; only the fill and gradient change.
+  const grows = isOpen && !autoTypeText;
+  const inputWrapperStyle: React.CSSProperties = grows
     ? { borderRadius: "16px" }
     : { borderRadius: "32px" };
   const EASE = "cubic-bezier(0.4,0,0.2,1)";
@@ -144,8 +146,8 @@ export function SearchFirstPromptBar({
           transition={{ duration: 0.2, ease: "easeOut" }}
           style={{
             position: "relative",
-            borderRadius: isOpen ? 20 : 36,
-            padding: isOpen ? "4px 10px 14px 4px" : "4px 10px 4px 4px",
+            borderRadius: grows ? 20 : 36,
+            padding: grows ? "4px 10px 14px 4px" : "4px 10px 4px 4px",
             backgroundColor: isOpen ? "#ffffff" : "transparent",
             boxShadow: GLOW,
             overflow: "hidden",

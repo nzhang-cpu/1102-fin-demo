@@ -35,23 +35,65 @@ const FILES = [
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** Weight is asked as a rough range, the way someone would actually answer. */
-const WEIGHT_RANGES = [
-  { value: "under-10", label: "Under 10 lbs" },
-  { value: "10-20", label: "10–20 lbs" },
-  { value: "20-40", label: "20–40 lbs" },
-  { value: "over-40", label: "Over 40 lbs" },
-];
+interface WeightRange {
+  label: string;
+  /** lower bound in pounds, inclusive; the next range's bound closes this one */
+  from: number;
+}
 
-function rangeFromText(text: string): string {
-  const n = parseFloat(text.match(/\d+(\.\d+)?/)?.[0] ?? "");
-  if (/under|less|below|<|small/.test(text) && Number.isNaN(n)) return "under-10";
-  if (/over|more|above|>|large|big/.test(text) && Number.isNaN(n)) return "over-40";
-  if (Number.isNaN(n)) return "10-20";
-  if (n < 10) return "under-10";
-  if (n <= 20) return "10-20";
-  if (n <= 40) return "20-40";
-  return "over-40";
+/** Weight is asked as a rough range sized for the species, the way an owner would actually answer. */
+const WEIGHT_RANGES: Record<PetType, WeightRange[]> = {
+  dog: [
+    { label: "Under 15 lbs", from: 0 },
+    { label: "15–30 lbs", from: 15 },
+    { label: "30–50 lbs", from: 30 },
+    { label: "50–80 lbs", from: 50 },
+    { label: "Over 80 lbs", from: 80 },
+  ],
+  cat: [
+    { label: "Under 8 lbs", from: 0 },
+    { label: "8–12 lbs", from: 8 },
+    { label: "12–16 lbs", from: 12 },
+    { label: "Over 16 lbs", from: 16 },
+  ],
+  rabbit: [
+    { label: "Under 3 lbs", from: 0 },
+    { label: "3–5 lbs", from: 3 },
+    { label: "5–8 lbs", from: 5 },
+    { label: "8–12 lbs", from: 8 },
+    { label: "Over 12 lbs", from: 12 },
+  ],
+  // birds are weighed in ounces: a budgie is about 1 oz, a cockatiel 3–4 oz, a macaw 2–4 lbs
+  bird: [
+    { label: "Under 4 oz", from: 0 },
+    { label: "4–8 oz", from: 0.25 },
+    { label: "8 oz–1 lb", from: 0.5 },
+    { label: "1–3 lbs", from: 1 },
+    { label: "Over 3 lbs", from: 3 },
+  ],
+};
+
+/** What autoplay answers: a dog small enough to fly in the cabin keeps the story's fee line true. */
+const DEFAULT_RANGE: Record<PetType, number> = { dog: 0, cat: 1, rabbit: 1, bird: 1 };
+
+const rangeChoices = (pet: PetType): ChatChoice[] =>
+  WEIGHT_RANGES[pet].map((r, i) => ({ label: r.label, value: String(i) }));
+
+/** Reads a typed weight ("about 15", "6 oz", "under 10") into one of the species' ranges. */
+function rangeIndexFromText(text: string, pet: PetType): number {
+  const ranges = WEIGHT_RANGES[pet];
+  const num = parseFloat(text.match(/\d+(\.\d+)?/)?.[0] ?? "");
+  if (Number.isNaN(num)) {
+    if (/under|less|below|small|tiny/.test(text)) return 0;
+    if (/over|more|above|large|big|huge/.test(text)) return ranges.length - 1;
+    return 1; // a sensible middle-of-the-road answer
+  }
+  const lbs = /\boz\b|ounce/.test(text) ? num / 16 : num;
+  let idx = 0;
+  ranges.forEach((r, i) => {
+    if (lbs >= r.from) idx = i;
+  });
+  return idx;
 }
 
 interface Options {
@@ -103,15 +145,16 @@ export function usePetChatFlow(o: Options) {
         id: "pc-q-weight",
         role: "agent",
         content: `Lovely! Roughly how much does your ${type} weigh? A range is fine. We combine your pet's weight with the crate's weight for cargo travel.`,
-        choices: WEIGHT_RANGES,
+        choices: rangeChoices(type),
       },
       "weight",
     );
   };
 
-  const answerWeight = (range: string) => {
+  const answerWeight = (index: number) => {
     if (phaseRef.current !== "weight") return;
-    const label = (WEIGHT_RANGES.find((r) => r.value === range) ?? WEIGHT_RANGES[1]).label;
+    const ranges = WEIGHT_RANGES[petRef.current];
+    const label = (ranges[index] ?? ranges[DEFAULT_RANGE[petRef.current]]).label;
     setPhase("busy");
     o.push({ id: "pc-a-weight", role: "user", content: label });
     fin(
@@ -165,7 +208,7 @@ export function usePetChatFlow(o: Options) {
   useEffect(() => {
     if (phase !== "done" || !o.finDone["pc-done"]) return;
     return gate(o.autoplay, 2600, () => {
-      o.push({ id: "pc-final", role: "agent", content: PET_FINAL_REPLY });
+      o.push({ id: "pc-final", role: "agent", content: PET_FINAL_REPLY.replace(/\bdog\b/, petRef.current) });
       o.onComplete();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,7 +223,7 @@ export function usePetChatFlow(o: Options) {
 
   useEffect(() => {
     if (phase !== "weight" || !o.finDone["pc-q-weight"]) return;
-    return gate(o.autoplay, 2000, () => answerWeight("10-20"));
+    return gate(o.autoplay, 2000, () => answerWeight(DEFAULT_RANGE[petRef.current]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, o.finDone["pc-q-weight"], o.autoplay]);
 
@@ -199,14 +242,14 @@ export function usePetChatFlow(o: Options) {
     isOpenFor: (id: string) => questionFor[phase] === id,
     pick: (value: string) => {
       if (phaseRef.current === "pet") answerPet(value as PetType);
-      else if (phaseRef.current === "weight") answerWeight(value);
+      else if (phaseRef.current === "weight") answerWeight(Number(value));
       else if (phaseRef.current === "docs") answerDocs();
     },
     answerText: (text: string) => {
       const t = text.trim().toLowerCase();
       if (!t) return;
       if (phaseRef.current === "pet") answerPet(PET_WORDS.find((p) => t.includes(p)) ?? "dog");
-      else if (phaseRef.current === "weight") answerWeight(rangeFromText(t));
+      else if (phaseRef.current === "weight") answerWeight(rangeIndexFromText(t, petRef.current));
       else if (phaseRef.current === "docs") answerDocs();
     },
     /** Files loading in the prompt bar. */
