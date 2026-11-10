@@ -208,8 +208,7 @@ export function ModernSearchResults(p: ModernSearchResultsProps) {
                         </span>
                       </span>
                       <span
-                        className="mt-[2px] flex size-[36px] shrink-0 items-center justify-center rounded-full bg-[#EEF3FC] transition-colors group-hover:bg-[#0B2A66] group-hover:text-white"
-                        style={{ color: navy }}
+                        className="mt-[2px] flex size-[36px] shrink-0 items-center justify-center rounded-full bg-[#EEF3FC] text-[#0B2A66] transition-colors group-hover:bg-[#0B2A66] group-hover:text-white"
                       >
                         <ArrowUpRight className="size-[18px]" />
                       </span>

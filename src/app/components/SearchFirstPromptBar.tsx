@@ -231,15 +231,22 @@ export function SearchFirstPromptBar({
               onMouseDown={(e) => e.preventDefault()}
               onClick={handleSearch}
               disabled={!canSubmit}
-              className={`shrink-0 flex items-center justify-center rounded-full bg-white transition-colors ${
-                canSubmit ? "hover:bg-gray-50 cursor-pointer" : "cursor-not-allowed"
+              className={`group shrink-0 flex items-center justify-center rounded-full bg-white transition-colors ${
+                canSubmit
+                  ? clearFrame
+                    ? "cursor-pointer hover:bg-[#0B2A66]"
+                    : "hover:bg-gray-50 cursor-pointer"
+                  : "cursor-not-allowed"
               }`}
               style={{ width: "64px", height: "64px", borderRadius: "9999px", marginRight: "6px" }}
               aria-label="Search"
             >
+              {/* Skyline skins: navy arrow on white that inverts to white on navy, like the other buttons */}
               <Send
-                className="size-[18px]"
-                style={{ color: canSubmit ? "var(--color-icon, #4A5565)" : "#C5CAD1" }}
+                className={`size-[18px] transition-colors ${
+                  canSubmit ? (clearFrame ? "text-[#0B2A66] group-hover:text-white" : "") : "text-[#C5CAD1]"
+                }`}
+                style={canSubmit && !clearFrame ? { color: "var(--color-icon, #4A5565)" } : undefined}
               />
             </button>
           </div>

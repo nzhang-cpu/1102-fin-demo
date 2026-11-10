@@ -135,7 +135,7 @@ export function FinAiSummary({ lead, body, sources = [], suggestions = [], onAsk
                 className="size-[34px] rounded-full flex items-center justify-center shrink-0 transition-all"
                 style={
                   draft.trim()
-                    ? { background: host.aiSummaryAccent, color: "#fff" }
+                    ? { background: host.searchCta, color: "#fff" }
                     : { background: ui.bgInput, color: ui.muted }
                 }
                 aria-label="Send question"
