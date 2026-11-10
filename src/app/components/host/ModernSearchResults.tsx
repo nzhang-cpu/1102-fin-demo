@@ -118,18 +118,8 @@ export function ModernSearchResults(p: ModernSearchResultsProps) {
           </button>
         </div>
 
-        <h1 className="mt-[44px] text-[30px] font-bold leading-[1.2] tracking-[-0.02em]" style={{ color: ink }}>
-          {p.query ? (
-            <>
-              Results for <span style={{ color: navy }}>“{p.query}”</span>
-            </>
-          ) : (
-            "All articles"
-          )}
-        </h1>
-
         {p.loading ? (
-          <div className="mt-[28px]">
+          <div className="mt-[32px]">
             <SearchLoading />
           </div>
         ) : (
@@ -137,7 +127,7 @@ export function ModernSearchResults(p: ModernSearchResultsProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-[28px]"
+            className="mt-[32px]"
           >
             {p.showSummary && (
               <FinAiSummary
@@ -150,11 +140,20 @@ export function ModernSearchResults(p: ModernSearchResultsProps) {
               />
             )}
 
-            {/* result count on the left, sort on the right */}
+            {/* quiet results label under the summary, sort on the right */}
             <div className="mb-[18px] mt-[36px] flex items-center justify-between gap-[8px]">
-              <p className="text-[13px]" style={{ color: muted }}>
-                {p.total} {p.total === 1 ? "article" : "articles"}
-              </p>
+              <h2 className="text-[15px] font-semibold" style={{ color: ink }}>
+                {p.query ? (
+                  <>
+                    Results for “{p.query}”
+                  </>
+                ) : (
+                  "All articles"
+                )}
+                <span className="ml-[8px] text-[13px] font-normal" style={{ color: muted }}>
+                  {p.total} {p.total === 1 ? "article" : "articles"}
+                </span>
+              </h2>
               <label className="relative ml-auto flex items-center gap-[6px] text-[13px]" style={{ color: muted }}>
                 Sort
                 <span className="relative">
